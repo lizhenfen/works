@@ -1,0 +1,26 @@
+server {
+  listen 9000;
+  server_name 127.0.0.1;
+  access_log /home/lizhen/logs/mail.auth.log main;
+
+  add_header Auth-Server 192.168.15.50;
+  location / {
+      empty_gif;
+  }
+  location = /auth-imap/ {
+      add_header Auth-status OK;
+      add_header Auth-Port 143;
+            
+  }
+  location = /auth-smtp/ {
+      add_header Auth-status OK;
+      add_header Auth-Port 25;
+            
+  }
+  location = /auth-pop3/ {
+      add_header Auth-status OK;
+      add_header Auth-Port 110;
+            
+  }
+  
+}

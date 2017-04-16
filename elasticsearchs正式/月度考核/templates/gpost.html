@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>分组数据</title>
+	<link ref="stylesheet" href='{{ static_url("css/bootstrap-table.min.css") }}'>
+    <script src='{{ static_url("js/jquery.min.js") }}'></script>
+    <script src='{{ static_url("js/bootstrap-table.min.js") }}'></script>
+	<script src='{{ static_url("js/bootstrap-table-zh-CN.js") }}'></script>
+
+</head>
+<body>
+    <form id="companyForm" action="/company/count" method="post" class="form-horizontal" role="form">
+                    <fieldset>
+                        <legend>查询条件</legend>
+                       <div class="form-group">
+                          <label class="col-sm-2 control-label" for="ds_host">公司</label>
+                          <div class="col-sm-4">
+                             <input class="form-control" id="ds_host" type="text" placeholder="6F79860-1A85-11E3-9860-D2A88FA7BD89"/>
+                          </div>
+                       </div>
+                       <div class="form-group">
+						  <label class="col-sm-2 control-label" for="ds_name">开始日期</label>
+                          <div class="col-sm-4">
+                             <input class="form-control" id="ds_name" name="start_date" type="text" placeholder="2017/02/01"/>
+                          </div>
+                          <label class="col-sm-2 control-label" for="ds_username">结束日期</label>
+                          <div class="col-sm-4">
+                             <input class="form-control" id="ds_username" name="end_date" type="text" placeholder="2017/02/03"/>
+                          </div>
+
+
+                       </div>
+                        <div class="form-group">
+                                <label class="col-sm-2 control-label" for="ds_count">返回数量</label>
+                          <div class="col-sm-4">
+                             <input class="form-control" id="ds_count" name="size" type="text" placeholder="10"/>
+                          </div>
+
+                       </div>
+                        <div class="form-group">
+                          <div class="col-sm-4 pull-right">
+                             <input  style="width: 50%" class="btn btn-primary btn-block" id="btn" type="button" value="查询"/>
+                          </div>
+
+                       </div>
+
+                    </fieldset>
+                    <hr />
+                </form>
+
+    <table id="cusTable">
+    </table>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#btn").click(function(){
+            var form = $("#companyForm").serialize();
+            $.post("/company/count",form,function (data) {
+                console.log(form);
+                $('#cusTable').bootstrapTable('destroy');
+                $(function () {
+					$('#cusTable').bootstrapTable({
+					    columns: [{
+                                    field: 'key',
+                                    title: '姓名'
+                                }, {
+                                    field: 'doc_count',
+                                    title: '拜访总数'
+                                },{
+                                    field: 'by_user.buckets.0.doc_count',
+                                    title: '0类客户拜访总数'
+                                },{
+                                    field: 'by_user.buckets.1.doc_count',
+                                    title: '1类客户拜访总数'
+                                }],
+						data: data["buckets"]
+					});
+				});
+            })
+        });
+    });
+
+
+</script>
+
+</body>
+</html>

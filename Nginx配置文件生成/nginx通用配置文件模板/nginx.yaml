@@ -1,0 +1,44 @@
+
+user  {{ nginx_user }};
+worker_processes  auto;
+error_log  logs/error.log  error;
+pid        run/nginx.pid;
+worker_rlimit_nofile {{ worker_rlimit_nofile }};
+events {
+    use epoll;
+    worker_connections  {{ worker_connections }};
+    }
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    server_tokens {{ server_tokens }};  #hide version
+    log_format  main  '$remote_addr - $remote_user $time_iso8601 "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+  
+    sendfile        {{  network_control }};  # send file to network, not from sys  forward network
+    {% if net_push %}
+        tcp_nopush      {{ network_control }};       # resolve network push
+    {% else %}
+        tcp_nodelay     {{ network_control }};     # network fast but maybe push 
+    {% end if %}
+    keepalive_timeout  {{ keepalive_timeout }};
+
+    {% if gzip_switch %}
+        gzip  on;
+        gzip_min_length {{ gzip_min_length }};
+        gzip_types text/plain text/css text/xml  
+                   application/x-javascript application/xml  
+                   application/atom+xml text/javascript;
+    {% end if %}   
+
+    #proxy_ignore_client_abort on;
+
+    large_client_header_buffers 4 32k;
+    client_header_buffer_size 16k;
+    client_max_body_size 4G;
+    
+    include conf.d/*.conf;
+}

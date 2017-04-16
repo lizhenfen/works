@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>消息管理</title>
+</head>
+<body>
+<a href="javascript:WebsocketTest()">Run WebSocket </a>
+<div id="message" style="height: 200px; background-color: black;
+                        color: white;
+                        overflow: scroll;
+ ">
+
+</div>
+</body>
+    <script type="text/javascript">
+        var messageContainer = document.getElementById("message");
+        function WebsocketTest() {
+            if ("WebSocket" in window) {
+                messageContainer.innerHTML = "websokcet is supported in your browser";
+                var ws = new WebSocket("ws://127.0.0.1:9000/websocket?id=12345");
+                ws.onopen = function () {
+                    ws.send("Messaget to send");
+                };
+                ws.onmessage = function (evt) {
+                    var received_data = evt.data;
+                    messageContainer.innerHTML = messageContainer.innerHTML +
+                            "<br />Messaged is received: " + received_data;
+                };
+                ws.onclose = function () {
+                    messageContainer.innerHTML =
+                        messageContainer.innerHTML + "<br />Message is closed.";
+                };
+            } else {
+                messageContainer.innerHTML = "Websocket Not supported by your browser";
+            }
+        }
+
+    </script>
+
+</html>

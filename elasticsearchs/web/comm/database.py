@@ -1,0 +1,92 @@
+import time
+import cx_Oracle
+
+version = "0.1"
+version_info = (0,1,0,0)
+
+class Connection(object):
+    def __init__(self,host=None,database=None,user=None,password=None,max_idle_time=7*3600,
+                 connection_timeout=0,time_zone="+0:00", charset="utf8"):
+        self._db = None
+        self.max_idle_time = max_idle_time
+        self._last_use_time= time.time()
+        try:
+            self.reconnect()
+        except Exception as e:
+            raise Exception("数据库连接失败",e)
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        if getattr(self, "_db", None) is not None:
+            self._db.close()
+            self._db = None
+
+    def reconnect(self):
+        self.close()
+        self._db = cx_Oracle.connect('jlfmmp','jlfmmptest','192.168.15.66/hzdb66')
+
+    def _ensure_connected(self):
+        if (self._db is None or
+                (time.time() - self._last_use_time > self.max_idle_time)):
+            self.reconnect()
+        self._last_use_time = time.time()
+
+    def _cursor(self):
+        self._ensure_connected()
+        return self._db.cursor()
+
+    def _execute(self, cursor, query, parameters, kwparameters):
+        try:
+            return cursor.execute(query, kwparameters or parameters)
+        except Exception as e:
+            self.close()
+            raise
+
+    def query(self,query, *parameter, **kwparameters):
+        cursor = self._cursor()
+        try:
+            self._execute(cursor,query, parameter, kwparameters)
+            column_names = [ d[0] for d in cursor.description ]
+            for row in cursor:
+                yield Row(zip(column_names,row))
+        finally:
+            cursor.close()
+    def execute_lastrowid(self, query, *parameters, **kwparameters):
+        """Executes the given query, returning the lastrowid from the query."""
+        cursor = self._cursor()
+        try:
+            self._execute(cursor, query, parameters, kwparameters)
+            return cursor.fetchone()
+        finally:
+            cursor.close()
+
+    def executemany(self, query, parameters):
+        """Executes the given query against all the given param sequences.
+
+        We return the lastrowid from the query.
+        """
+        return self.executemany_lastrowid(query, parameters)
+
+class Row(dict):
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            return AttributeError(name)
+
+if __name__ == "__main__":
+    sql = '''
+        select a.pk_custvisit_h, a.pk_corp, a.pk_user, a.vdate vdate, a.pk_cust
+          from mb_custvisit_h a
+         where a.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2',
+                '20130723-6B57-3442-58F2-ECEB8C202D18')
+           and a.vdate >= :1
+           and a.vdate <= :2
+           '''
+    t = Connection()
+    ss = t.query(sql,'2017-02-01', "2017-04-01")
+    for i in ss:
+        print(i)
+        break

@@ -1,0 +1,152 @@
+    upstream token {
+        server 192.168.15.37:11111;
+
+    }
+    upstream order {
+        server 192.168.15.37:10010;
+    }
+    
+    upstream advert {
+        server 192.168.15.37:10210;
+    }
+    upstream user {
+        server 192.168.15.32:10002;
+    }
+    upstream lbs {
+        server 192.168.15.32:10001;
+    }
+    upstream workflow {
+        server 192.168.15.49:10015;
+    }
+    upstream store {
+        server 192.168.15.49:10320;
+    }
+
+
+    access_log /home/lizhen/logs/apis.vats.com.cn.log main;
+    server {
+        listen 443 ssl;
+        server_name apis.vats.com.cn;
+
+        location ^~ /token/ {
+            rewrite /token/(.+)$ /vats-api-token/$1 break;
+            proxy_pass http://token;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept-Language "zh-CN";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        proxy_set_header   Cookie $http_cookie;
+        proxy_read_timeout 250;
+        proxy_buffers 256 4k;
+        proxy_max_temp_file_size 0k;
+        proxy_connect_timeout 80;
+        proxy_send_timeout 80;
+
+        }
+        location ^~ /order/ {
+            rewrite /order/(.+)$ /vats-api-order/$1 break;
+            proxy_pass http://order;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept-Language "zh-CN";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        proxy_set_header   Cookie $http_cookie;
+        proxy_read_timeout 250;
+        proxy_buffers 256 4k;
+        proxy_max_temp_file_size 0k;
+        proxy_connect_timeout 80;
+        proxy_send_timeout 80;
+
+        }
+        location ^~ /advert/ {
+            rewrite /advert/(.+?)/(.+)$ /vats-api-advert-supplier/$2 break;
+            proxy_pass http://advert;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept-Language "zh-CN";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        proxy_set_header   Cookie $http_cookie;
+        proxy_read_timeout 250;
+        proxy_buffers 256 4k;
+        proxy_max_temp_file_size 0k;
+        proxy_connect_timeout 80;
+        proxy_send_timeout 80;
+
+        }
+        location ^~ /user/ {
+            rewrite /user/(.+)$ /vats-api-user/$1 break;
+            proxy_pass http://user;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept-Language "zh-CN";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        proxy_set_header   Cookie $http_cookie;
+        proxy_read_timeout 250;
+        proxy_buffers 256 4k;
+        proxy_max_temp_file_size 0k;
+        proxy_connect_timeout 80;
+        proxy_send_timeout 80;
+
+        }
+        location ^~ /lbs/ {
+            rewrite /lbs/(.+)$ /vats-api-lbs/$1 break;
+            proxy_pass http://lbs;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept-Language "zh-CN";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        proxy_set_header   Cookie $http_cookie;
+        proxy_read_timeout 250;
+        proxy_buffers 256 4k;
+        proxy_max_temp_file_size 0k;
+        proxy_connect_timeout 80;
+        proxy_send_timeout 80;
+
+        }
+
+        location ^~ /workFlow/ {
+            rewrite /workFlow/(.+)$ /vats-api-workFlow/$1 break;
+            proxy_pass http://workflow;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept-Language "zh-CN";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        proxy_set_header   Cookie $http_cookie;
+        proxy_read_timeout 250;
+        proxy_buffers 256 4k;
+        proxy_max_temp_file_size 0k;
+        proxy_connect_timeout 80;
+        proxy_send_timeout 80;
+
+        }
+
+        location ^~ /store/ {
+            rewrite /store/(.+)$ /vats-api-store/$1 break;
+            proxy_pass http://store;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept-Language "zh-CN";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        proxy_set_header   Cookie $http_cookie;
+        proxy_read_timeout 250;
+        proxy_buffers 256 4k;
+        proxy_max_temp_file_size 0k;
+        proxy_connect_timeout 80;
+        proxy_send_timeout 80;
+
+        }
+}
