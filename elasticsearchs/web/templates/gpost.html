@@ -16,7 +16,7 @@
                        <div class="form-group">
                           <label class="col-sm-2 control-label" for="ds_host">公司</label>
                           <div class="col-sm-4">
-                             <input class="form-control" id="ds_host" type="text" placeholder="6F79860-1A85-11E3-9860-D2A88FA7BD89"/>
+                             <input class="form-control" id="ds_host" name="company" type="text" placeholder="今缘春销售"/>
                           </div>
                        </div>
                        <div class="form-group">
@@ -31,13 +31,7 @@
 
 
                        </div>
-                        <div class="form-group">
-                                <label class="col-sm-2 control-label" for="ds_count">前</label>
-                          <div class="col-sm-4">
-                             <input class="form-control" id="ds_count" name="size" type="text" placeholder="10"/><p>名</p>
-                          </div>
 
-                       </div>
                         <div class="form-group">
                           <div class="col-sm-4 pull-right">
                              <input  style="width: 50%" class="btn btn-primary btn-block" id="btn" type="button" value="查询"/>
@@ -57,10 +51,35 @@
             var form = $("#companyForm").serialize();
             $.post("/company/count",form,function (data) {
                 analyze_data = '查询时间:' + data["time"] + "秒, 查询次数:"+ data["count"] +"<hr />";
+                console.log(data)
                 document.getElementById("Ptime").innerHTML=analyze_data;
                 $('#cusTable').bootstrapTable('destroy');
                 $(function () {
 					$('#cusTable').bootstrapTable({
+					    //是否显示行间隔色
+                        striped: true,
+                        //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                        cache: false,
+                        //是否显示分页（*）
+                        pagination: true,
+                         //是否启用排序
+                        sortable: false,
+
+                        //初始化加载第一页，默认第一页
+                        //我设置了这一项，但是貌似没起作用，而且我这默认是0,- -
+                        pageNumber:1,
+                        //每页的记录行数（*）
+                        pageSize: 10,
+                        //可供选择的每页的行数（*）
+                        pageList: [10, 25, 50, 100],
+
+                        //分页方式：client客户端分页，server服务端分页（*）
+                        sidePagination: "client",
+                        //是否显示搜索
+                        search: false,
+                        //Enable the strict search.
+                        strictSearch: true,
+
 					    columns: [{
                                     field: 'key',
                                     title: '姓名'
@@ -68,18 +87,24 @@
                                     field: 'doc_count',
                                     title: '拜访总数'
                                 },{
-                                    field: 'by_user.buckets.0.doc_count',
-                                    title: '经销商(0)总数'
-                                },{
-                                    field: 'by_user.buckets.0.unique.value',
-                                    title: '经销商(0)个数'
-                                },
-                                {
                                     field: 'by_user.buckets.1.doc_count',
-                                    title: '网点(1)总数'
+                                    title: '网点(0)总数'
                                 },{
                                     field: 'by_user.buckets.1.unique.value',
-                                    title: '网点(1)个数'
+                                    title: '网点(0)个数'
+                                },
+                                {
+                                    field: 'by_user.buckets.0.doc_count',
+                                    title: '经销商(1)总数'
+                                },{
+                                    field: 'by_user.buckets.0.unique.value',
+                                    title: '经销商(1)个数'
+                                },{
+                                    field: 'by_user.buckets.2.doc_count',
+                                    title: '团购(2)总数'
+                                },{
+                                    field: 'by_user.buckets.2.unique.value',
+                                    title: '团购(2)个数'
                                 }],
 						data: data["buckets"]
 					});

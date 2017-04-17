@@ -44,6 +44,20 @@ class Connection(object):
             self.close()
             raise
 
+    def get(self, query, *parameters, **kwparameters):
+        """Returns the (singular) row returned by the given query.
+
+        If the query has no results, returns None.  If it has
+        more than one result, raises an exception.
+        """
+        rows = list(self.query(query, *parameters, **kwparameters))
+        if not rows:
+            return None
+        elif len(rows) > 1:
+            raise Exception("Multiple rows returned for Database.get() query")
+        else:
+            return rows[0]
+
     def query(self,query, *parameter, **kwparameters):
         cursor = self._cursor()
         try:
@@ -77,16 +91,13 @@ class Row(dict):
             return AttributeError(name)
 
 if __name__ == "__main__":
+
     sql = '''
-        select a.pk_custvisit_h, a.pk_corp, a.pk_user, a.vdate vdate, a.pk_cust
-          from mb_custvisit_h a
-         where a.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2',
-                '20130723-6B57-3442-58F2-ECEB8C202D18')
-           and a.vdate >= :1
-           and a.vdate <= :2
-           '''
+               select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
+                '''
+
     t = Connection()
-    ss = t.query(sql,'2017-02-01', "2017-04-01")
+    ss = t.get(sql,'开口笑销售公司')
+    print(ss)
     for i in ss:
         print(i)
-        break

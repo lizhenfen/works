@@ -1,7 +1,8 @@
 from elasticsearch import Elasticsearch
+from elasticsearch import helpers
 import json
 
-es = Elasticsearch(['192.168.5.132:9200'])
+es = Elasticsearch(['192.168.15.212:9200'])
 
 def group_by_employee(index,start_date=None,end_date=None,doc_type="custvisit",size=10,interval=False):
     interval_time = "minute" if interval else "day"
@@ -77,7 +78,7 @@ def search_by_date(index="test-index",start_date=None, doc_type="custvisit",end_
     return res
 
 
-def search_by_pdcust(index="test-index",doc_type='pdcust',key=None):
+def search_by_pdcust(index="test-index",doc_type='pdcust',key=None, custtype=None):
     req = {
         "query": {
             "bool": {
@@ -97,36 +98,45 @@ def search_by_pdcust(index="test-index",doc_type='pdcust',key=None):
     return res
 
 #统计拜访数据
-def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PK_USER"):
+def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PK_USER",company=None):
     '''
         根据客户类型: 0,1 区分
     '''
     req = {
-        "size": size,
+        "size": 1,
         "_source": "false",
         "query":{
-            "bool":{
-                "filter":{"range":{"VDATE":{"lte": end_date,"gte": start_date,"format":"yyyy/MM/dd"}}}
+            "bool": {
+
+                "filter": {"range": {"VDATE": {"lte": end_date, "gte": start_date, "format": "yyyy/MM/dd"}}}
             }
         },
+
         "aggs": {
+
             "groups": {
-                "terms":{"field": "%s" % key,"size": size},
+                # 此值用来根据姓名或PK_USER 排序
+                #"terms":{"field": "%s" % key, "size": 6*1024*1024 },
+                "terms":{"field": "PSNAME" , "size": 6 * 1024 * 1024},
                 "aggs": {"by_user": {"terms": {"field": "PK_CORP_ID"},
                                      "aggs":{
-                                         "unique": {"cardinality": {"field": "PK_CUST"}}}
+                                         "unique": {"cardinality": {"field": "PK_CUST" }}}
                                      },
                          },
+
             },
+
         }
     }
-
+    if company:
+        req["query"]["bool"]["must"] =  {"term": {"PK_CORP": company }},
 
     data = es.search(index=index,body=req)
     count = data["hits"]["total"]
     res = data["aggregations"]["groups"]
     res["count"] = count
     return res
+
 
 def test(index,size=10,start_date=None,end_date=None,doc_type="mb_report"):
     '''根据 search_key 改编'''
@@ -152,21 +162,9 @@ if __name__ == "__main__":
 
     import time
     start_time = time.time()
-    '''
-    res = search_by_date("test-index",
-                         start_date="2017/02/11",
-                         end_date="2017/02/11",
-                         doc_type="mb_report",  key="PK_USER")
-    '''
-    '''
-    res = search_by_cust_id("test-index", size=10, start_date="2017/02/01",
-               end_date="2017/02/19")
-    '''
-    res = search_by_cust_id("test-index",
-                                    start_date="2017/02/01",
-                                    end_date="2017/02/19",
-                                    size=10)
+    res = search_by_cust_id("test-index",start_date="2017/02/02",end_date="2017/02/02",size=10,key="PK_USER")
+    print(res)
     end_time = time.time()
     seconds = end_time - start_time
-    print(res)
+
     print(seconds)

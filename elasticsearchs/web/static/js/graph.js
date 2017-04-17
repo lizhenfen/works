@@ -310,8 +310,8 @@ function showAtRight(url) {
         }
 
 //index页, 公司趋势图
-function LoadCompanyTrend() {
-            $.post("/echarts/api/company", function (data) {
+function LoadCompanyTrend(q,m) {
+            $.post("/echarts/api/company",{q:q, month:m},function (data) {
             var x = data["x_series"];
             var y = data["y_series"];
         //此处开始图表展示
@@ -381,8 +381,8 @@ function LoadCompanyTrend() {
 }
 
 //index页 , 个人趋势图
-function LoadPersonTrend(q) {
-            $.post("/echarts/api/person",{q: q} ,function (data) {
+function LoadPersonTrend(q,m) {
+            $.post("/echarts/api/person",{q: q , month:m } ,function (data) {
             var x = data["x_series"];
             var y = data["y_series"];
         //此处开始图表展示
@@ -461,10 +461,12 @@ function show(){
 
 //index页, 查询按钮
 function LoadGranph() {
+            var month = document.getElementById("month").value;
             var objS = document.getElementById("mySelect");
             var load = objS.options[objS.selectedIndex].value;  //下拉菜单
             var query = document.getElementById("q").value; //查询值
-            var exec1 = load+"(\""+ query+"\")" ;
+            var exec1 = load+"(\""+ query+ "\",\"" + month +"\")" ;
+            console.log(exec1);
             eval(exec1);
             //console.log(eval(exec1))
 }

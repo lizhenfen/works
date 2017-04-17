@@ -5,6 +5,9 @@ import bisect
 from tornado.escape import json_encode
 from comm import elasapi
 from comm  import auth
+from comm import comm
+#导入数据库
+from comm import database
 
 #--计算时间
 import time
@@ -59,10 +62,30 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.render("gpost.html")
 
+    def valueMap(self,res):
+        res = res["by_user"]["buckets"]
+        all_keys = ["0", "1", "2"]
+        if len(res) < 3:
+            key = [ k["key"] for k in res ]
+            no_keys = list( set(all_keys) - set(key) )
+            res.extend([ {'doc_count': 0, 'unique': {'value': 0}, 'key': str(_) } for _ in no_keys ])
+            res.sort(key=lambda s: s["key"])
+        return res
+
     def post(self, *args, **kwargs):
         start_date = self.get_argument("start_date")
         end_date = self.get_argument("end_date")
         res_size = self.get_argument("size") or 10
+        company  = self.get_argument("company", None)
+        if not end_date and not start_date:
+            #未指定日期
+            pass
+        if company:
+            company_sql = '''
+                           select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
+                         '''
+            db = database.Connection()
+            company =  db.get(company_sql,company)["CORP_ID"]
         starttime = time.time()
         '''此处查找总的拜访次数
         res = elasapi.group_by_company("test-index",
@@ -73,9 +96,12 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
         res = elasapi.search_by_cust_id("test-index",
                                         start_date=start_date,
                                         end_date=end_date,
-                                        size=res_size)
+                                        size=res_size,company=company)
         endtime = time.time()
         res["time"] = "{:.2f}".format(endtime - starttime)
+        #修改汇总数据中的 "-" 为 0
+        list(map(self.valueMap, res["buckets"]))
+
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(res)
 
@@ -92,7 +118,6 @@ class AnalyzeByCompanyVisitHandler(tornado.web.RequestHandler):
                                    size=100)
         endtime = time.time()
         print(endtime - starttime)
-
         MaxVisitCount = res["buckets"][0]["doc_count"]
         groups = math.ceil(int(MaxVisitCount) / 10)
         x_series= [ x  for x in range(MaxVisitCount) if x % groups == 0 ]
@@ -146,23 +171,20 @@ class ApiCompanyTrendHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.render("companytrend.html")
 
-
     def post(self, *args, **kwargs):
-        #start_date = self.get_argument("start_date")
-        #end_date = self.get_argument("end_date")
-        #res_size = self.get_argument("size",10)
-        res = elasapi.search_key("test-index",start_date="2017/02/01",
-                                   end_date="2017/02/28",key="PK_CORP")
-
+        month = self.get_argument("month")
+        company = self.get_argument("q")
+        start_date, end_date = comm.getMonthFirstDayAndLastDay(month=month)
+        res = elasapi.search_key("test-index",start_date=start_date,
+                                   end_date=end_date,key="PK_CORP")
         data = {}
         x_series = []
         y_series =[]
         for d in res:
             x_series.append(d["key_as_string"])  #日期
             y_series.append(d["doc_count"])      #次数
-        data["x_series"] = x_series
+        data["x_series"] = list(map(lambda x: x.split()[0] , x_series))
         data["y_series"] = y_series
-        print(data)
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(data)
 
@@ -173,17 +195,19 @@ class ApiPersonTrendHandler(tornado.web.RequestHandler):
         #start_date = self.get_argument("start_date")
         #end_date = self.get_argument("end_date")
         #res_size = self.get_argument("size",10)
-        q = self.get_argument("q")
-        res = elasapi.search_key("test-index", start_date="2017/02/01",
-                                 end_date="2017/02/28", key="PK_USER",
-                                 person_name=q) #"218CEA10-237F-11E5-AA10-F3DFF09504A9"
+        month  = self.get_argument("month")
+        person = self.get_argument("q")
+        start_date,end_date = comm.getMonthFirstDayAndLastDay(month=month)
+        res = elasapi.search_key("test-index", start_date=start_date,
+                                 end_date=end_date, key="PK_USER",
+                                 person_name=person)
         data = {}
         x_series = []
         y_series =[]
         for d in res:
             x_series.append(d["key_as_string"])  #日期
             y_series.append(d["doc_count"])      #次数
-        data["x_series"] = x_series
+        data["x_series"] = list(map(lambda x: x.split()[0] , x_series))
         data["y_series"] = y_series
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(data)
