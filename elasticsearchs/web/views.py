@@ -13,6 +13,8 @@ from comm import database
 import time
 import functools
 
+from itertools import groupby
+
 def outer(func):
     @functools.wraps(func)
     def inner(self, *args, **kwargs):
@@ -75,7 +77,7 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         start_date = self.get_argument("start_date")
         end_date = self.get_argument("end_date")
-        res_size = self.get_argument("size") or 10
+        #res_size = self.get_argument("size") or 10
         company  = self.get_argument("company", None)
         if not end_date and not start_date:
             #未指定日期
@@ -96,7 +98,7 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
         res = elasapi.search_by_cust_id("test-index",
                                         start_date=start_date,
                                         end_date=end_date,
-                                        size=res_size,company=company)
+                                        size=10,company=company)
         endtime = time.time()
         res["time"] = "{:.2f}".format(endtime - starttime)
         #修改汇总数据中的 "-" 为 0
@@ -105,30 +107,74 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(res)
 
+class EchartsHandler(tornado.web.RequestHandler):
+    def get(self, echart):
+        self.render("%s.html" % echart)
+
+#分析公司日拜访次数
 class AnalyzeByCompanyVisitHandler(tornado.web.RequestHandler):
-    '''
-        根据公司分每个人的拜访次数
-        或      每个人的拜访次数
-    '''
-    def get(self, *args, **kwargs):
+    def listtogroup(self,lreq):
+        res = []
+        for i in enumerate(lreq):
+            try:
+                test = "[" + str(i[1]) + "," + str(lreq[i[0] + 1]) + ")"
+            except:
+                test = "[" + str(i[1]) + "," + ")"
+            res.append(test)
+        return res
+    def post(self, *args, **kwargs):
+        company = self.get_argument("q", None)
+        if company:
+            company_sql = '''
+                  select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
+                                 '''
+            db = database.Connection()
+            company = db.get(company_sql, company)["CORP_ID"]
         starttime = time.time()
-        res = elasapi.group_by_company("test-index",
+        res = elasapi.search_by_date("test-index",
                                    start_date="2017/02/12",
                                    end_date='2017/02/13',
-                                   size=100)
+                                   company_name = company)
         endtime = time.time()
-        print(endtime - starttime)
+        #获取最大的拜访次数
         MaxVisitCount = res["buckets"][0]["doc_count"]
+        # 根据最大的拜访次数, 计算出分区
         groups = math.ceil(int(MaxVisitCount) / 10)
+        # 求出x轴的数据
         x_series= [ x  for x in range(MaxVisitCount) if x % groups == 0 ]
-        y=[ bisect.bisect(x_series,(i["doc_count"]) ) for i in res["buckets"] ]
-        y.reverse()
-        y_series = [ y.count(e_y) for e_y in set(y) ]
-        res["x_series"] = x_series
+        x_res_series = self.listtogroup(x_series)
+        # 插入拜访数据到 计算出的分割次数
+        y = []
+        [ bisect.insort(y,(i["doc_count"]) ) for i in res["buckets"] ]
+        # 计算各区间的和
+        #y_series = [ y.count(e_y) for e_y in set(y) ]
+        y_series = []
+        for k,g in groupby(y, key=lambda x: x // groups):
+            t_len  =len(list(g))
+            y_series.append(t_len)
+            print('{}-{}'.format(k*groups,t_len))
+        res["x_series"] = x_res_series
         res["y_series"] = y_series
-        print(res)
         self.set_header("Access-Control-Allow-Origin", "*")
         self.finish(json_encode(res))
+
+#个人日拜分析
+class AnalyzeByPersonVisitHandler(tornado.web.RequestHandler):
+
+    def post(self,*args,**kwargs):
+        person = self.get_argument("q")
+        res = elasapi.test("test-index", size=10, start_date="2017/02/12 00:00",
+                            end_date="2017/02/12 11:00",
+                            doc_type="mb_report")
+        print(res)
+        buckets = [ _["_source"]for _ in res["hits"]["hits"]]
+        res = res["aggregations"]["by_day"]["buckets"]
+        d = {}
+        d["x_series"] = [ _["key_as_string"] for _ in res ]
+        d["y_series"] = [ _["doc_count"] for _ in res ]
+        d["buckets"] = buckets
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.finish(json_encode(d))
 
 class GroupByEmployeeHandler(tornado.web.RequestHandler):
     '''
@@ -143,28 +189,14 @@ class GroupByEmployeeHandler(tornado.web.RequestHandler):
         self.render("user.html", data=res)
         #self.finish(res)
 
-class EchartsHandler(tornado.web.RequestHandler):
-    def get(self, echart):
-        self.render("%s.html" % echart)
+
 
 class TestHandler(tornado.web.RequestHandler):
 
     def get(self, *args, **kwargs):
         self.render("index1.html")
 
-class AnalyzeByPersonVisitHandler(tornado.web.RequestHandler):
 
-    def get(self,*args,**kwargs):
-        res = elasapi.test("test-index", size=10, start_date="2017/02/11 00:00",
-               end_date="2017/02/11 11:00", doc_type="mb_report")
-        buckets = [ _["_source"]for _ in res["hits"]["hits"]]
-        res = res["aggregations"]["by_day"]["buckets"]
-        d = {}
-        d["x_series"] = [ _["key_as_string"] for _ in res ]
-        d["y_series"] = [ _["doc_count"] for _ in res ]
-        d["buckets"] = buckets
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.finish(json_encode(d))
 
 #公司当月每天的拜访次数的趋势图
 class ApiCompanyTrendHandler(tornado.web.RequestHandler):
@@ -173,10 +205,19 @@ class ApiCompanyTrendHandler(tornado.web.RequestHandler):
 
     def post(self, *args, **kwargs):
         month = self.get_argument("month")
-        company = self.get_argument("q")
+        company = self.get_argument("q",None)
+        print(company,month)
+        if company:
+            company_sql = '''
+                      select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
+                                 '''
+            db = database.Connection()
+            company = db.get(company_sql, company)["CORP_ID"]
+
         start_date, end_date = comm.getMonthFirstDayAndLastDay(month=month)
         res = elasapi.search_key("test-index",start_date=start_date,
-                                   end_date=end_date,key="PK_CORP")
+                                   end_date=end_date,key="PK_CORP",
+                                 company_name=company)
         data = {}
         x_series = []
         y_series =[]
@@ -192,9 +233,6 @@ class ApiCompanyTrendHandler(tornado.web.RequestHandler):
 class ApiPersonTrendHandler(tornado.web.RequestHandler):
 
     def post(self, *args, **kwargs):
-        #start_date = self.get_argument("start_date")
-        #end_date = self.get_argument("end_date")
-        #res_size = self.get_argument("size",10)
         month  = self.get_argument("month")
         person = self.get_argument("q")
         start_date,end_date = comm.getMonthFirstDayAndLastDay(month=month)

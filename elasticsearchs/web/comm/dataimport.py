@@ -115,56 +115,17 @@ def insert_mb_report(sql, index="test-index", doc_type="mb_report"):
     db = database.Connection()
     ss = db.query(sql)
     for line in ss:
+        line["VDATE"] = convert_date(line["VDATE"].strip())
         data = json.dumps(line)
         print(data)
         es.index(index=index, doc_type=doc_type, body=data)
 
 
 if __name__ == "__main__":
-    # del_index(index="test-index")
-    # 创建索引
-    # create_index()
-    # 导入经销商(0)、网点(1)客户档案
-    company_sql = '''
-        select cust.pk_corp,cust.pk_cust,cust.pk_psn,nvl(cust.custprop,1) custprop
-        from v_dealersandcust cust
-        where cust.custprop != 2
-           and cust.pk_corp in('172A13A0-F08E-11DF-B72E-CD511538A0D2', '20130723-6B57-3442-58F2-ECEB8C202D18')
-
-    '''
-    insert_data(company_sql)
-
-    # 导入团购(2)客户档案
-    tuangou_sql = '''
-              select a.pk_corp, a.pk_psnalcust pk_cust, a.pk_psn, '2' custprop
-              from bd_psnalcust a
-              where a.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-        '''
-    insert_data(tuangou_sql)
-
-    # 导入客户的经销商, 网点拜访明细
-    kehu_baifang_sql = '''
-                                select a.pk_custvisit_h, a.pk_corp, a.pk_user, a.vdate, a.pk_cust
-                                from mb_custvisit_h a
-                                where a.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-                                                    and a.vdate >= '2017-02-01'
-                                                    and a.vdate <= '2017-03-02'
-                         '''
-    insert_mb_custvisi_h(kehu_baifang_sql, index="test-index", doc_type="custvisit")
-
-    # 导入团购拜访明细
-    tuangou_baifang_sql = '''
-                 select b.pk_custvisit_h, b.pk_corp, b.pk_user, b.vdate, b.pk_cust
-                 from mb_psnalcustvisit_h b
-                 where b.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-                                    and b.vdate >= '2017-02-01'
-                                    and b.vdate <= '2017-04-01'
-         '''
-    insert_mb_custvisi_h(tuangou_baifang_sql, index="test-index", doc_type="custvisit")
 
     # 导入开始工作时间、
     work_sql = '''
-        select pk_reportinfo, pk_corp, pk_user, reporttime, reportaddr
+        select pk_reportinfo, pk_corp, pk_user, reporttime as vdate, reportaddr
         from mb_reportinfo
         where pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
                          and  reporttime >= '2017-02-01'

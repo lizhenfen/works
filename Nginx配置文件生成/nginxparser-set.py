@@ -18,12 +18,6 @@ class NginxConfParse(object):
     def _upstream(self, upname):
         return upname[7:]
 
-    def _gethost(self):
-        name = socket.gethostname()
-        localip = socket.gethostbyname(name)
-        return localip
-
-
     def res_report(self, server, upstream):
         res_list = []
         for s in server:

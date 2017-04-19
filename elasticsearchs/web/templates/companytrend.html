@@ -7,8 +7,8 @@
 </head>
 <body>
     <div class="vertical">
-    <form >
-    <select id="month" class="form-control selcls"
+    <form id="analyze"  method="post" class="form-horizontal" role="form">
+        <select id="month" name="month" class="form-control selcls"
         style="margin:2px auto;width:100px; display: inline-block"
         > <!-- onchange="show()" -->
             <option value="1" >1月</option>
@@ -16,7 +16,7 @@
             <option value="3" >3月</option>
             <option value="4" selected="selected">4月</option>
         </select>
-    <input type="text" id="q" style="margin:0px auto;width:300px; display: inline-block"
+        <input type="text" id="q" style="margin:0px auto;width:300px; display: inline-block"
                class="typeahead form-control" data-provide="typeahead"
             name="q"
                autocomplete="off" placeholder="请输入要搜索名称">
@@ -28,7 +28,7 @@
             <option value="LoadPersonTrend">个人</option>
         </select>
         <input type="button" class="btn btn-success " onclick="LoadGranph()" value="查询">
-    </form>
+     </form>
     <hr />
 
     </div>

@@ -2,8 +2,8 @@
  * Created by Administrator on 2017/4/11.
  */
 // 个人柱状图，拜访次数统计
-function LoadPersonColumnGraph(q) {
-        $.get("/employee/visit/count", function (data) {
+function LoadPersonColumnGraph(req) {
+        $.post("/employee/visit/count",req, function (data) {
             data = $.parseJSON(data);
             var x = data["x_series"];
             var y = data["y_series"];
@@ -100,8 +100,8 @@ function LoadPersonColumnGraph(q) {
     }
 
 //公司柱状图，拜访次数统计
-function LoadCompanyColumnGraph(q) {
-        $.get("/company/visit/count", function (data) {
+function LoadCompanyColumnGraph(req) {
+        $.post("/company/visit/count",req, function (data) {
             data = $.parseJSON(data);
             console.log(data);
             var x = data["x_series"];
@@ -190,8 +190,8 @@ function LoadCompanyColumnGraph(q) {
     }
 
 // 公司趋势图
-function LoadCompantyTrendGraph() {
-        $.post("/echarts/api/company", function (data) {
+function LoadCompantyTrendGraph(req) {
+        $.post("/echarts/api/company",req, function (data) {
             var x = data["x_series"];
             var y = data["y_series"];
         //此处开始图表展示
@@ -310,8 +310,8 @@ function showAtRight(url) {
         }
 
 //index页, 公司趋势图
-function LoadCompanyTrend(q,m) {
-            $.post("/echarts/api/company",{q:q, month:m},function (data) {
+function LoadCompanyTrend(req) {
+            $.post("/echarts/api/company",req,function (data) {
             var x = data["x_series"];
             var y = data["y_series"];
         //此处开始图表展示
@@ -381,8 +381,8 @@ function LoadCompanyTrend(q,m) {
 }
 
 //index页 , 个人趋势图
-function LoadPersonTrend(q,m) {
-            $.post("/echarts/api/person",{q: q , month:m } ,function (data) {
+function LoadPersonTrend(req) {
+            $.post("/echarts/api/person",req ,function (data) {
             var x = data["x_series"];
             var y = data["y_series"];
         //此处开始图表展示
@@ -461,12 +461,13 @@ function show(){
 
 //index页, 查询按钮
 function LoadGranph() {
-            var month = document.getElementById("month").value;
+            var form = $("#analyze").serialize();
+            console.log(form);
             var objS = document.getElementById("mySelect");
             var load = objS.options[objS.selectedIndex].value;  //下拉菜单
-            var query = document.getElementById("q").value; //查询值
-            var exec1 = load+"(\""+ query+ "\",\"" + month +"\")" ;
-            console.log(exec1);
+            //var exec1 = load+"(\""+ query+ "\",\"" + month +"\")" ;
+            var exec1 = load+"(\""+ form + "\")" ;
+            //console.log(exec1);
             eval(exec1);
             //console.log(eval(exec1))
 }

@@ -93,11 +93,15 @@ class Row(dict):
 if __name__ == "__main__":
 
     sql = '''
-               select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
+               select pk_reportinfo, pk_corp, pk_user, reporttime as vdate, reportaddr
+        from mb_reportinfo
+        where pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
+                         and  reporttime >= '2017-02-01'
+                         and  reporttime <= '2017-04-01'
                 '''
 
     t = Connection()
-    ss = t.get(sql,'开口笑销售公司')
+    ss = t.query(sql)
     print(ss)
     for i in ss:
         print(i)
