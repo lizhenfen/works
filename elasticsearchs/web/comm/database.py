@@ -93,15 +93,12 @@ class Row(dict):
 if __name__ == "__main__":
 
     sql = '''
-               select pk_reportinfo, pk_corp, pk_user, reporttime as vdate, reportaddr
-        from mb_reportinfo
-        where pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-                         and  reporttime >= '2017-02-01'
-                         and  reporttime <= '2017-04-01'
-                '''
+             select a.psnname
+      from bd_person a
+      where a.pk_user=:1
+             '''
 
     t = Connection()
-    ss = t.query(sql)
+    ss = t.get(sql,"1FDD2D50-C498-11E5-AD50-8EE421A391FA")
     print(ss)
-    for i in ss:
-        print(i)
+

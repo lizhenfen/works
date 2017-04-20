@@ -27,7 +27,7 @@ function LoadPersonColumnGraph(req) {
                 {
                     axisLabel :{
                     interval:0, //显示所有的x轴的数据
-                    rotate: -45,
+                    //rotate: -45,  //逆时针旋转45
                     margin: 5
                 } ,
                     type : 'category',
@@ -86,7 +86,7 @@ function LoadPersonColumnGraph(req) {
                                     field: 'PK_CORP',
                                     title: '公司'
                                 }, {
-                                    field: 'PK_USER',
+                                    field: 'PSNNAME',
                                     title: '姓名'
                                 }, {
                                     field: 'VDATE',
@@ -176,6 +176,29 @@ function LoadCompanyColumnGraph(req) {
         $('#cusTable').bootstrapTable('destroy');
                 $(function () {
 					$('#cusTable').bootstrapTable({
+					    //是否显示行间隔色
+                        striped: true,
+                        //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                        cache: false,
+                        //是否显示分页（*）
+                        pagination: true,
+                         //是否启用排序
+                        sortable: false,
+
+                        //初始化加载第一页，默认第一页
+                        //我设置了这一项，但是貌似没起作用，而且我这默认是0,- -
+                        pageNumber:1,
+                        //每页的记录行数（*）
+                        pageSize: 5,
+                        //可供选择的每页的行数（*）
+                        pageList: [5,10, 25, 50, 100],
+
+                        //分页方式：client客户端分页，server服务端分页（*）
+                        sidePagination: "client",
+                        //是否显示搜索
+                        search: false,
+                        //Enable the strict search.
+                        strictSearch: true,
 					    columns: [{
                                     field: 'key',
                                     title: '姓名'

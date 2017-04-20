@@ -11,9 +11,8 @@ from comm import database
 
 #--计算时间
 import time
+import datetime
 import functools
-
-from itertools import groupby
 
 def outer(func):
     @functools.wraps(func)
@@ -111,7 +110,7 @@ class EchartsHandler(tornado.web.RequestHandler):
     def get(self, echart):
         self.render("%s.html" % echart)
 
-#分析公司日拜访次数
+#公司日拜访次数
 class AnalyzeByCompanyVisitHandler(tornado.web.RequestHandler):
     def listtogroup(self,lreq):
         res = []
@@ -136,43 +135,68 @@ class AnalyzeByCompanyVisitHandler(tornado.web.RequestHandler):
                                    end_date='2017/02/13',
                                    company_name = company)
         endtime = time.time()
-        #获取最大的拜访次数
         MaxVisitCount = res["buckets"][0]["doc_count"]
-        # 根据最大的拜访次数, 计算出分区
         groups = math.ceil(int(MaxVisitCount) / 10)
-        # 求出x轴的数据
-        x_series= [ x  for x in range(MaxVisitCount) if x % groups == 0 ]
-        x_res_series = self.listtogroup(x_series)
-        # 插入拜访数据到 计算出的分割次数
-        y = []
-        [ bisect.insort(y,(i["doc_count"]) ) for i in res["buckets"] ]
-        # 计算各区间的和
-        #y_series = [ y.count(e_y) for e_y in set(y) ]
-        y_series = []
-        for k,g in groupby(y, key=lambda x: x // groups):
-            t_len  =len(list(g))
-            y_series.append(t_len)
-            print('{}-{}'.format(k*groups,t_len))
-        res["x_series"] = x_res_series
+        x_series = [x for x in range(MaxVisitCount) if x % groups == 0]
+        '''
+            请不要装逼,  ( ^_^ ) 没有改变就没有伤害 ( ^_^ )
+            x_series = [0, 9, 18, 27, 36, 45, 54, 63, 72, 81]
+            y = [1]*10 + [10]*2 + [53]*2
+            x_series = ['[0,9)','[9,18)'...,'[63,72)', '[72,81)', '[81,)']
+            y_series = [(1,10),(2,2),(3,0),(4,0),(5,0),(6,2)...(10,0)]
+            result = xxoo
+        '''
+        # ---------------格式化数据----开始
+        y = [bisect.bisect(x_series, (i["doc_count"])) for i in res["buckets"]]
+        y.reverse()
+        y = [(_, y.count(_)) for _ in set(y)]
+        y.extend( list(map(lambda x: (x, 0),list(
+                set( [ _[0] for _ in list(enumerate(x_series))[1:] ]) - set([_[0] for _ in y])))) )
+        y.sort(key=lambda x: x[0])
+        y_series = [_[1] for _ in y]
+        x_series = self.listtogroup(x_series)
+        # ----------------格式化数据----结束
+        res["x_series"] = x_series
         res["y_series"] = y_series
         self.set_header("Access-Control-Allow-Origin", "*")
         self.finish(json_encode(res))
 
 #个人日拜分析
 class AnalyzeByPersonVisitHandler(tornado.web.RequestHandler):
+    def plus_half_time(sefl, strtime):
+        dtime = datetime.datetime.strptime(strtime, "%H:%M:%S") + datetime.timedelta(minutes=30)
+        res = time.strftime('%H:%M:%S', dtime.timetuple())
+        return res
+
+    def convert_corp_name(self,cname):
+
+        corp_name = {
+            '172A13A0-F08E-11DF-B72E-CD511538A0D2': '今缘春销售',
+            '20130723-6B57-3442-58F2-ECEB8C202D18': '开口笑销售公司'
+        }
+        cname["PK_CORP"] = corp_name.get(cname["PK_CORP"])
+
+        return cname
+
 
     def post(self,*args,**kwargs):
         person = self.get_argument("q")
+        start_time = time.time()
         res = elasapi.test("test-index", size=10, start_date="2017/02/12 00:00",
-                            end_date="2017/02/12 11:00",
+                                end_date="2017/02/12 11:00",
                             doc_type="mb_report")
-        print(res)
         buckets = [ _["_source"]for _ in res["hits"]["hits"]]
+
         res = res["aggregations"]["by_day"]["buckets"]
         d = {}
-        d["x_series"] = [ _["key_as_string"] for _ in res ]
+        x_series = [ _["key_as_string"] for _ in res ]
+        d["x_series"] = list( map(self.plus_half_time,list( map(lambda x: x.split()[-1], x_series ) )))
         d["y_series"] = [ _["doc_count"] for _ in res ]
+
+        res = list(map(self.convert_corp_name, buckets))
         d["buckets"] = buckets
+        end_time = time.time()
+        print(end_time - start_time )
         self.set_header("Access-Control-Allow-Origin", "*")
         self.finish(json_encode(d))
 
@@ -190,13 +214,10 @@ class GroupByEmployeeHandler(tornado.web.RequestHandler):
         #self.finish(res)
 
 
-
 class TestHandler(tornado.web.RequestHandler):
 
     def get(self, *args, **kwargs):
         self.render("index1.html")
-
-
 
 #公司当月每天的拜访次数的趋势图
 class ApiCompanyTrendHandler(tornado.web.RequestHandler):

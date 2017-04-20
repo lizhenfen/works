@@ -50,7 +50,7 @@
         $("#btn").click(function(){
             var form = $("#companyForm").serialize();
             $.post("/company/count",form,function (data) {
-                analyze_data = '查询时间:' + data["time"] + "秒, 查询次数:"+ data["count"] +"<hr />";
+                analyze_data = '汇总时间:' + data["time"] + "秒, 汇总数据:"+ data["count"] +"条<hr />";
                 console.log(data)
                 document.getElementById("Ptime").innerHTML=analyze_data;
                 $('#cusTable').bootstrapTable('destroy');

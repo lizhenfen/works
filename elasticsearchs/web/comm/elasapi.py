@@ -65,7 +65,8 @@ def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_typ
 
 
 def search_by_date(index="test-index",start_date=None, doc_type="custvisit",end_date=None,
-                   key="PK_USER",company_name=None,person_name=None):
+                   key="PSNAME",company_name=None,person_name=None):
+    # 存在一个小BUG, 当用户重名时，需要根据PK_USER分组
     req = {
         "size": 10,
         "_source": "false",
@@ -145,10 +146,14 @@ def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PK_USER",
 def test(index,size=10,start_date=None,end_date=None,doc_type="mb_report"):
     '''根据 search_key 改编'''
     req = {
+        "size": 100,
         "query": {
             "bool": {
                 "filter": {"range": {"VDATE": {"gte": start_date, "lte": end_date,"format": "yyyy/MM/dd HH:mm"}}}
             }
+        },
+        "sort": {
+            "VDATE": {"order": "asc"}
         },
         "aggs": {
             "by_day":{
