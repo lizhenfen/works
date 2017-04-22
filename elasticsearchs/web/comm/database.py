@@ -93,12 +93,12 @@ class Row(dict):
 if __name__ == "__main__":
 
     sql = '''
-             select a.psnname
-      from bd_person a
-      where a.pk_user=:1
+            select a.pk_corp, a.pk_psn, a.psnname, a.pk_user
+  from bd_person a
              '''
 
     t = Connection()
-    ss = t.get(sql,"1FDD2D50-C498-11E5-AD50-8EE421A391FA")
+    ss = t.query(sql)
     print(ss)
-
+    for i in ss:
+        print(i)

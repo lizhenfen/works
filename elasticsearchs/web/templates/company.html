@@ -8,7 +8,7 @@
     <form id="analyze"  method="post" class="form-horizontal" role="form">
         <input type="text" id="q" style="margin:0px auto;width:300px; display: inline-block"
                class="typeahead form-control" data-provide="typeahead" name="q"
-               autocomplete="off" placeholder="请输入要搜索名称">
+               autocomplete="off" placeholder="请输入名称">
         <select id="mySelect" class="form-control selcls"
         style="margin:2px auto;width:100px; display: inline-block"
         > <!-- onchange="show()" -->
@@ -29,7 +29,10 @@
         //获取自动补全数据
         $('input.typeahead').typeahead({
             source:  function (query, process) {
-            return $.post('/search', { query: query }, function (data) {
+                var objS = document.getElementById("mySelect");
+                var q_type = objS.options[objS.selectedIndex].value;  //下拉菜单
+                console.log(q_type);
+            return $.post('/search', { query: query, q_type: q_type }, function (data) {
                     console.log(data);
                     data = $.parseJSON(data);
                     return process(data);

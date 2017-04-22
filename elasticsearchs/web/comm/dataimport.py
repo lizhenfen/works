@@ -56,6 +56,7 @@ def insert_data(sql, index="test-index", doc_type="pdcust", convert_d=False):
     for line in ss:
         if convert_d:
             line["VDATE"] = convert_date(line["VDATE"].strip())
+        print(line)
         es.index(index=index, doc_type=doc_type, body=line)
 
 
@@ -82,7 +83,7 @@ def insert_mb_custvisi_h(sql, index="test-index", doc_type="custvisit"):
     username_sql = '''
           select a.pk_corp, a.pk_psn, a.psnname, a.pk_user
           from bd_person a
-          where a.pk_user = :1
+          where  a.pk_corp<>'3EA0CF10-FB39-11E2-8F10-C7A1C15F563D' and a.pk_user = :1
           '''
     db = database.Connection()
     ss = db.query(sql)
@@ -90,8 +91,11 @@ def insert_mb_custvisi_h(sql, index="test-index", doc_type="custvisit"):
         key = line["PK_CUST"]
         keys = elasapi.search_by_pdcust(index="test-index", doc_type='pdcust', key=key,custtype=2)
         if not keys: continue
-        username = db.get(username_sql,line["PK_USER"])
-        print(username)
+        try:
+            username = db.get(username_sql,line["PK_USER"])
+        except:
+            # PK_SER 有多个值
+            continue
         if username:
             line["PSNAME"] = username["PSNNAME"]
         line["PK_CORP_ID"] = str(keys)
@@ -131,55 +135,65 @@ def insert_mb_report(sql, index="test-index", doc_type="mb_report"):
 
 
 if __name__ == "__main__":
-    # del_index(index="test-index")
+    del_index(index="test-index")
     # 创建索引
-    # create_index()
+    create_index()
     # 导入经销商(0)、网点(1)客户档案
     company_sql = '''
-                    select cust.pk_corp,cust.pk_cust,cust.pk_psn,nvl(cust.custprop,1) custprop
-                    from v_dealersandcust cust
-                    where cust.custprop != 2
-                       and cust.pk_corp in('172A13A0-F08E-11DF-B72E-CD511538A0D2', '20130723-6B57-3442-58F2-ECEB8C202D18')
+                        select cust.pk_corp,cust.pk_cust,cust.pk_psn,nvl(cust.custprop,1) custprop
+                        from v_dealersandcust cust
+                        where cust.custprop != 2
 
-                '''
+
+                    '''
     insert_data(company_sql)
 
     # 导入团购(2)客户档案
     tuangou_sql = '''
-                          select a.pk_corp, a.pk_psnalcust pk_cust, a.pk_psn, '2' custprop
-                          from bd_psnalcust a
-                          where a.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-                    '''
+                              select a.pk_corp, a.pk_psnalcust pk_cust, a.pk_psn, '2' custprop
+                              from bd_psnalcust a
+
+                        '''
     insert_data(tuangou_sql)
 
     # 导入客户的经销商, 网点拜访明细
     kehu_baifang_sql = '''
-                                            select a.pk_custvisit_h, a.pk_corp, a.pk_user, a.vdate, a.pk_cust
-                                            from mb_custvisit_h a
-                                            where a.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-                                                                and a.vdate >= '2017-02-01'
-                                                                and a.vdate <= '2017-03-02'
-                                     '''
+                                                select a.pk_custvisit_h, a.pk_corp, a.pk_user, a.vdate, a.pk_cust
+                                                from mb_custvisit_h a
+                                                where a.vdate >= '2017-01-01'
+                                                                    and a.vdate <= '2017-04-02'
+                                         '''
     insert_mb_custvisi_h(kehu_baifang_sql, index="test-index", doc_type="custvisit")
 
     # 导入团购拜访明细
     tuangou_baifang_sql = '''
-                             select b.pk_custvisit_h, b.pk_corp, b.pk_user, b.vdate, b.pk_cust
-                             from mb_psnalcustvisit_h b
-                             where b.pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-                                                and b.vdate >= '2017-02-01'
-                                                and b.vdate <= '2017-04-01'
-                     '''
+                                 select b.pk_custvisit_h, b.pk_corp, b.pk_user, b.vdate, b.pk_cust
+                                 from mb_psnalcustvisit_h b
+
+                                                    and b.vdate >= '2017-01-01'
+                                                    and b.vdate <= '2017-04-01'
+                         '''
     insert_mb_custvisi_h(tuangou_baifang_sql, index="test-index", doc_type="custvisit")
 
     # 导入开始工作时间、
     work_sql = '''
-        select pk_reportinfo, pk_corp, pk_user, reporttime as vdate, reportaddr
-        from mb_reportinfo
-        where pk_corp in ('172A13A0-F08E-11DF-B72E-CD511538A0D2','20130723-6B57-3442-58F2-ECEB8C202D18')
-                         and  reporttime >= '2017-02-01'
-                         and  reporttime <= '2017-04-01'
-    '''
+            select pk_reportinfo, pk_corp, pk_user, reporttime as vdate, reportaddr
+            from mb_reportinfo
+
+                             and  reporttime >= '2017-01-01'
+                             and  reporttime <= '2017-04-04'
+        '''
     insert_mb_report(work_sql, index="test-index", doc_type="mb_report")
 
+    # 导入公司信息
+    company_name_sql = '''
+            select a.corp_id,a.unitname from pub_corp a
+        '''
+    insert_data(company_name_sql, index="test-index", doc_type="company")
 
+    # 导入个人信息
+    company_name_sql = '''
+            select a.pk_corp, a.pk_psn, a.psnname, a.pk_user
+            from bd_person a
+        '''
+    insert_data(company_name_sql, index="test-index", doc_type="person")

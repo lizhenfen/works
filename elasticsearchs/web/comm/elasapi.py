@@ -25,18 +25,18 @@ def group_by_employee(index,start_date=None,end_date=None,doc_type="custvisit",s
     return data["aggregations"]["groups"]["buckets"]
 
 
-def search_by_tuan(index,size=1):
+def query_word(word,index="test-index",key="UNITNAME",doc_type="company",size=10):
     req = {
-        "size": 1,
+        "size": size,
         "query":{
             "bool": {
                 "must":{
-                    "match":{"PK_PSNALCUST":"20150301-B83A-F00C-4E05-3ACA8006500C"}
+                    "match":{key : word}
                 },
             }
         },
     }
-    data = es.search(index=index, doc_type="bd_psnalcust", body=json.dumps(req))
+    data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
     return data
 
 

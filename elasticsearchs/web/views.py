@@ -76,7 +76,6 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         start_date = self.get_argument("start_date")
         end_date = self.get_argument("end_date")
-        #res_size = self.get_argument("size") or 10
         company  = self.get_argument("company", None)
         if not end_date and not start_date:
             #未指定日期
@@ -88,12 +87,6 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
             db = database.Connection()
             company =  db.get(company_sql,company)["CORP_ID"]
         starttime = time.time()
-        '''此处查找总的拜访次数
-        res = elasapi.group_by_company("test-index",
-                                   start_date=start_date,
-                                   end_date=end_date,
-                                   size=100)
-        '''
         res = elasapi.search_by_cust_id("test-index",
                                         start_date=start_date,
                                         end_date=end_date,
@@ -102,7 +95,6 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
         res["time"] = "{:.2f}".format(endtime - starttime)
         #修改汇总数据中的 "-" 为 0
         list(map(self.valueMap, res["buckets"]))
-
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(res)
 
@@ -273,13 +265,29 @@ class ApiPersonTrendHandler(tornado.web.RequestHandler):
 
 #查询个人月拜时，自动补全查询对话框
 class ApiAutoCompleteHandler(tornado.web.RequestHandler):
+
     def get(self):
         self.render("t1.html")
     def post(self):
-        l = ["218CEA10-237F-11E5-AA10-F3DFF09504A9","26F79860-1A85-11E3-9860-D2A88FA7BD89"]
+        word = self.get_argument("query", None)
+        q_type = self.get_argument("q_type")  #LoadCompanyTrend,LoadPersonTrend
+        # sql = '''
+        #       select a.corp_id,a.unitname from pub_corp a where a.unitname like :1
+        #       '''
+        #
+        # t = database.Connection()
+        # ss = t.query(sql, word + "%")
+        # print(ss)
+        # l = [ i['UNITNAME'] for i in ss ][:10]
+        if q_type == "LoadCompanyTrend" or q_type == "LoadCompanyColumnGraph":
+            res = elasapi.query_word(word)
+            l = [_["_source"]["UNITNAME"] for _ in res["hits"]["hits"]]
+        else:
+            res = elasapi.query_word(word,key="PSNNAME",doc_type="person")
+            l = [ _["_source"]["PSNNAME"] for _ in res["hits"]["hits"] ]
+            print(res)
         data =json_encode(l)
         self.finish(data)
 
 class NginxConfigHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.render("company.html")
+    pass

@@ -495,6 +495,7 @@ function LoadGranph() {
             //console.log(eval(exec1))
 }
 
+
 //index页, 点击执行
 function executeScript(html){
 
