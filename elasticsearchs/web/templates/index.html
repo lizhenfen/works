@@ -6,7 +6,7 @@
         <link href='{{ static_url("css/index.css") }}' rel="stylesheet">
         <!-- 引入其他所有网页的内容 -->
         <link href='{{ static_url("css/bootstrap-table.min.css") }}' rel="stylesheet">
-
+        <link href='{{ static_url("css/font-awesome.min.css") }}' rel="stylesheet">
     </head>
 
   <body >
@@ -45,8 +45,7 @@
       <div class="row">
         <div id="left" class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li class="active"><a href="#" onclick="showAtRight('/company/count')">公司数据汇总 </a></li>
-			<li><a href="#" onclick="showAtRight('/employee/count')">单用户数据汇总</a></li>
+            <li class="active"><a href="#" onclick="showAtRight('/company/count')">数据汇总</a></li>
 			<li><a href="#" onclick="showAtRight('/echart/company')">每日工作</a></li>
 			<li><a href="#" onclick="showAtRight('/echarts/api/company')">月拜分析</a></li>
           </ul>

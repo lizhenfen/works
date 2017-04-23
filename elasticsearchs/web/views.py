@@ -76,7 +76,7 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         start_date = self.get_argument("start_date")
         end_date = self.get_argument("end_date")
-        company  = self.get_argument("company", None)
+        company  = self.get_argument("q", None)
         if not end_date and not start_date:
             #未指定日期
             pass
@@ -268,7 +268,7 @@ class ApiAutoCompleteHandler(tornado.web.RequestHandler):
         self.render("t1.html")
     def post(self):
         word = self.get_argument("query", None)
-        q_type = self.get_argument("q_type")  #LoadCompanyTrend,LoadPersonTrend
+        q_type = self.get_argument("q_type", None)  #LoadCompanyTrend,LoadPersonTrend
         # sql = '''
         #       select a.corp_id,a.unitname from pub_corp a where a.unitname like :1
         #       '''
@@ -277,7 +277,7 @@ class ApiAutoCompleteHandler(tornado.web.RequestHandler):
         # ss = t.query(sql, word + "%")
         # print(ss)
         # l = [ i['UNITNAME'] for i in ss ][:10]
-        if q_type == "LoadCompanyTrend" or q_type == "LoadCompanyColumnGraph":
+        if q_type is None or q_type == "LoadCompanyTrend" or q_type == "LoadCompanyColumnGraph":
             res = elasapi.query_word(word)
             l = [_["_source"]["UNITNAME"] for _ in res["hits"]["hits"]]
         else:
@@ -289,3 +289,26 @@ class ApiAutoCompleteHandler(tornado.web.RequestHandler):
 
 class NginxConfigHandler(tornado.web.RequestHandler):
     pass
+
+#统计数据中的个人明细数据
+class LoadPersonOnGpost(tornado.web.RequestHandler):
+
+    def post(self, *args, **kwargs):
+        company_name = self.get_argument('company', None)
+        start_date= self.get_argument('start_date')
+        end_date  = self.get_argument('end_date')
+        person    = self.get_argument("person_name")
+        res = elasapi.search_key("test-index", start_date=start_date,
+                                  end_date=end_date, key="PK_USER",
+                                 person_name=person)
+        data = {}
+        x_series = []
+        y_series =[]
+        for d in res:
+            x_series.append(d["key_as_string"])  #日期
+            y_series.append(d["doc_count"])      #次数
+        data["x_series"] = list(map(lambda x: x.split()[0] , x_series))
+        data["x_series"] = x_series
+        data["y_series"] = y_series
+        self.set_header("Content-Type","application/json;charset=UTF-8")
+        self.finish(data)

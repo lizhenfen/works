@@ -528,3 +528,74 @@ function ButtonClickBlue() {
         $(this).addClass('active');
     });
 }
+
+
+//首页汇总表格数据中，点击按钮后显示的个人详细
+function LoadPersonOnGpost(req) {
+            $.post("/api/person/trend",req ,function (data) {
+            var x = data["x_series"];
+            var y = data["y_series"];
+        //此处开始图表展示
+        var myChart = echarts.init(document.getElementById('main'));
+        option = {
+            color: ['#ff3d3d'],
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                x: 'left',
+                padding: [10, 20, 0, 20],
+                data: ['拜访次数'],
+                selected: {
+                    'VATS': true
+                }
+            },
+            grid: {
+                left: '0',
+                right: '5%',
+                bottom: '-4%',
+                top: '13%',
+                containLabel: true
+            },
+
+            xAxis: {
+                axisLabel :{
+                    interval:0, //显示所有的x轴的数据
+                    rotate: -45,
+                    margin: 5
+                } ,
+                type: 'category',
+                boundaryGap: false,
+                splitLine: { //网格线
+                    show: true,
+                    lineStyle: {
+                        color: ['#b1b1b1'],
+                        type: 'dashed'
+                    }
+                },
+                data:  x
+            },
+            yAxis: {
+                splitLine: { //网格线
+                    show: true,
+                    lineStyle: {
+                        color: ['#b1b1b1'],
+                        type: 'dashed'
+                    }
+                }
+            },
+            series: [{
+                name: 'VATS',
+                type: 'line',
+                data:  y,
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top' //值显示
+                    }
+                }
+            }]
+        };
+        myChart.setOption(option)
+        });//请求结束
+}

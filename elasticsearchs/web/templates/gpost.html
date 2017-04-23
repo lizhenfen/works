@@ -13,10 +13,13 @@
     <form id="companyForm" action="/company/count" method="post" class="form-horizontal" role="form">
                     <fieldset>
                         <legend>查询条件</legend>
+
                        <div class="form-group">
-                          <label class="col-sm-2 control-label" for="ds_host">公司</label>
+                          <label class="col-sm-2 control-label" for="q">公司</label>
                           <div class="col-sm-4">
-                             <input class="form-control" id="ds_host" name="company" type="text" placeholder="今缘春销售"/>
+                              <input type="text" id="q" style="margin:0px auto;width:300px; display: inline-block"
+                               class="typeahead form-control" data-provide="typeahead" name="q"
+                               autocomplete="off" placeholder="今缘春销售">
                           </div>
                        </div>
                        <div class="form-group">
@@ -41,17 +44,57 @@
 
                     </fieldset>
                     <hr />
-                </form>
+    </form>
     <div id="Ptime"></div>
-    <table id="cusTable">
-    </table>
+    <table id="cusTable"></table>
+    <!-- 模态框（Modal）开始 -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+       aria-labelledby="myModalLabel" aria-hidden="true">
+       <div class="modal-dialog" style="width: 900px;height:400px;">
+          <div class="modal-content" >
+             <div class="modal-header">
+                <button type="button" class="close"
+                   data-dismiss="modal" aria-hidden="true">
+                      &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                   详细信息
+                </h4>
+             </div>
+             <div class="modal-body" >
+                 <div id="main" style="width: 900px;height:400px;"> </div>
+             </div>
+             <div class="modal-footer">
+                <button type="button" class="btn btn-default"
+                   data-dismiss="modal">关闭
+                </button>
+
+             </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+    <!-- 模态框（Modal）结束 -->
+
 <script type="text/javascript">
+    //获取自动补全数据
+    $('input.typeahead').typeahead({
+        source:  function (query, process) {
+            q_type = 'LoadCompanyTrend';
+            console.log(q_type);
+            return $.post('/search', { query: query, q_type: q_type }, function (data) {
+                console.log(data);
+                data = $.parseJSON(data);
+                return process(data);
+            });
+        }
+    });
+
     $(document).ready(function(){
         $("#btn").click(function(){
             var form = $("#companyForm").serialize();
             $.post("/company/count",form,function (data) {
                 analyze_data = '汇总时间:' + data["time"] + "秒, 汇总数据:"+ data["count"] +"条<hr />";
-                console.log(data)
                 document.getElementById("Ptime").innerHTML=analyze_data;
                 $('#cusTable').bootstrapTable('destroy');
                 $(function () {
@@ -105,14 +148,41 @@
                                 },{
                                     field: 'by_user.buckets.2.unique.value',
                                     title: '团购(2)个数'
+                                },{
+                                    field: 'operate',
+                                    title: '操作',
+                                    align: 'center',
+                                    events: operateEvents,
+                                    formatter: operateFormatter
                                 }],
 						data: data["buckets"]
 					});
 				});
+                function operateFormatter(value, row, index) {
+                    return [
+                        '<button class="btn btn-primary " data-toggle="modal" data-target="#myModal">',
+                        '明细</button>'
+                    ].join('');
+                };
+                //
+
             })
         });
     });
-
+    window.operateEvents = {
+                    'click .btn': function (e, value, row, index) {
+                        var form = $("#companyForm").serialize();
+                        var person_name  = encodeURI(row["key"]);
+                        var req = form + '&person_name=' + person_name;
+                        LoadPersonOnGpost(req);
+                    },
+                    'click .remove': function (e, value, row, index) {
+                        $table.bootstrapTable('remove', {
+                            field: 'id',
+                            values: [row.id]
+                        });
+                    }
+                };
 </script>
 
 </body>

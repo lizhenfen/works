@@ -15,5 +15,5 @@ uri = [
             (r'/echarts/api/person', views.ApiPersonTrendHandler),
             (r'/search', views.ApiAutoCompleteHandler),
             (r'/nginx', views.NginxConfigHandler),
-
+            (r'/api/person/trend', views.LoadPersonOnGpost),
         ]
