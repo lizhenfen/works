@@ -5,18 +5,7 @@
         <link href='{{ static_url("css/bootstrap.min.css") }}' rel="stylesheet">
         <link href='{{ static_url("css/index.css") }}' rel="stylesheet">
         <!-- 引入其他所有网页的内容 -->
-        <!-- company.html -->
-        <script src='{{ static_url("js/echarts.min.js") }}' ></script>
-        <script src='{{ static_url("js/jquery.min.js") }}'></script>
-        <link ref="stylesheet" href='{{ static_url("css/bootstrap-table.min.css") }}'>
-        <script src='{{ static_url("js/bootstrap-table.min.js") }}'></script>
-	    <script src='{{ static_url("js/bootstrap-table-zh-CN.js") }}'></script>
-         <script src='{{ static_url("js/bootstrap.min.js") }}'></script>
-        <!-- company.html -->
-        <!--bootstrap的自动补全 -->
-        <script src='{{ static_url("js/bootstrap3-typeahead.min.js") }}'></script>
-        <!--自定义js -->
-        <script src='{{ static_url("js/graph.js") }}'></script>
+        <link href='{{ static_url("css/bootstrap-table.min.css") }}' rel="stylesheet">
 
     </head>
 
@@ -31,7 +20,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">数据查询接口</a>
+          <a class="navbar-brand" href="#">藤兰数据处理中心</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -58,7 +47,7 @@
           <ul class="nav nav-sidebar">
             <li class="active"><a href="#" onclick="showAtRight('/company/count')">公司数据汇总 </a></li>
 			<li><a href="#" onclick="showAtRight('/employee/count')">单用户数据汇总</a></li>
-			<li><a href="#" onclick="showAtRight('/echart/company')">日拜分析</a></li>
+			<li><a href="#" onclick="showAtRight('/echart/company')">每日工作</a></li>
 			<li><a href="#" onclick="showAtRight('/echarts/api/company')">月拜分析</a></li>
           </ul>
           <!--<ul class="nav nav-sidebar">
@@ -73,12 +62,12 @@
             padding: 0 0;
             margin-bottom: 20px;
           ">
-              <h4 >
+              <h5 >
               <ol class="breadcrumb" >
                 <li><a href="#">首页</a></li>
                 <li><a href="#">分析</a></li>
               </ol>
-          </h4>
+          </h5>
           </div>
           <hr />
 
@@ -89,13 +78,23 @@
       </div>
     </div>
 
-
-
+     <!-- company.html -->
+    <script src='{{ static_url("js/echarts.min.js") }}' ></script>
+    <script src='{{ static_url("js/jquery.min.js") }}'></script>
+    <script src='{{ static_url("js/bootstrap-table.min.js") }}'></script>
+    <script src='{{ static_url("js/bootstrap-table-zh-CN.js") }}'></script>
+    <script src='{{ static_url("js/bootstrap.min.js") }}'></script>
+    <!-- company.html -->
+    <!--bootstrap的自动补全 -->
+    <script src='{{ static_url("js/bootstrap3-typeahead.min.js") }}'></script>
+    <!--自定义js -->
+    <script src='{{ static_url("js/graph.js") }}'></script>
     <script type="text/javascript">
         //点击时, 蓝色显示
-        $(document).ready(ButtonClickBlue);
+        $(document).ready(
+           ButtonClickBlue()
 
+        );
     </script>
-
 
 </body></html>

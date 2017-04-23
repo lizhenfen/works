@@ -522,9 +522,9 @@ function executeScript(html){
 
 //index页，点击时，蓝色显示
 function ButtonClickBlue() {
-            $('ul.nav > li').click(function (e) {
-                //e.preventDefault();    加上这句则导航的<a>标签会失效
-                $('ul.nav > li').removeClass('active');
-                $(this).addClass('active');
-            });
-        }
+    $('ul.nav > li').click(function (e) {
+        //e.preventDefault();    //加上这句则导航的<a>标签会失效
+        $('ul.nav > li').removeClass('active');
+        $(this).addClass('active');
+    });
+}

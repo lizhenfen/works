@@ -1,5 +1,6 @@
 import views
 
+
 uri = [
             (r'/', views.IndexHandler),
             (r'/test', views.TestHandler),
@@ -13,5 +14,6 @@ uri = [
             (r'/echarts/api/company', views.ApiCompanyTrendHandler),
             (r'/echarts/api/person', views.ApiPersonTrendHandler),
             (r'/search', views.ApiAutoCompleteHandler),
-            (r'/nginx', views.NginxConfigHandler)
+            (r'/nginx', views.NginxConfigHandler),
+
         ]

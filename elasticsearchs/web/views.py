@@ -155,19 +155,17 @@ class AnalyzeByCompanyVisitHandler(tornado.web.RequestHandler):
 
 #个人日拜分析
 class AnalyzeByPersonVisitHandler(tornado.web.RequestHandler):
+    corp_name = {}  #当前缓存
     def plus_half_time(sefl, strtime):
         dtime = datetime.datetime.strptime(strtime, "%H:%M:%S") + datetime.timedelta(minutes=30)
         res = time.strftime('%H:%M:%S', dtime.timetuple())
         return res
 
     def convert_corp_name(self,cname):
-
-        corp_name = {
-            '172A13A0-F08E-11DF-B72E-CD511538A0D2': '今缘春销售',
-            '20130723-6B57-3442-58F2-ECEB8C202D18': '开口笑销售公司'
-        }
-        cname["PK_CORP"] = corp_name.get(cname["PK_CORP"])
-
+        if not self.corp_name.get(cname["PK_CORP"],None):
+            company = elasapi.person_to_company('%s' % cname["PK_CORP"])
+            self.corp_name[ cname["PK_CORP"] ] = company
+        cname["PK_CORP"] = self.corp_name.get(cname["PK_CORP"],'未知')
         return cname
 
 

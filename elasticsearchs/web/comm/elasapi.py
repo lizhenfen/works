@@ -4,8 +4,6 @@ import json
 
 es = Elasticsearch(['192.168.15.212:9200'])
 
-
-
 def group_by_employee(index,start_date=None,end_date=None,doc_type="custvisit",size=10,interval=False):
     interval_time = "minute" if interval else "day"
     req = {
@@ -24,7 +22,6 @@ def group_by_employee(index,start_date=None,end_date=None,doc_type="custvisit",s
     data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
     return data["aggregations"]["groups"]["buckets"]
 
-
 def query_word(word,index="test-index",key="UNITNAME",doc_type="company",size=10):
     req = {
         "size": size,
@@ -38,7 +35,6 @@ def query_word(word,index="test-index",key="UNITNAME",doc_type="company",size=10
     }
     data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
     return data
-
 
 def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_type="custvisit",
                person_name=None,company_name=None):
@@ -62,7 +58,6 @@ def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_typ
         req["query"]["bool"]["must"] = must
     data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
     return data["aggregations"]["by_day"]["buckets"]
-
 
 def search_by_date(index="test-index",start_date=None, doc_type="custvisit",end_date=None,
                    key="PSNAME",company_name=None,person_name=None):
@@ -88,7 +83,6 @@ def search_by_date(index="test-index",start_date=None, doc_type="custvisit",end_
     res = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
 
     return res["aggregations"]["groups"]
-
 
 def search_by_pdcust(index="test-index",doc_type='pdcust',key=None, custtype=None):
     req = {
@@ -142,7 +136,6 @@ def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PK_USER",
     res["count"] = count
     return res
 
-
 def test(index,size=10,start_date=None,end_date=None,doc_type="mb_report"):
     '''根据 search_key 改编'''
     req = {
@@ -166,11 +159,24 @@ def test(index,size=10,start_date=None,end_date=None,doc_type="mb_report"):
     return data
 
 
+def person_to_company(word,index="test-index",key="CORP_ID",doc_type="company",size=1):
+    req = {
+        "size": size,
+        "query":{
+            "bool": {
+                "must":{
+                    "match":{key : word}
+                },
+            }
+        },
+    }
+    data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
+    return data["hits"]["hits"][0]["_source"]["UNITNAME"]
 if __name__ == "__main__":
 
     import time
     start_time = time.time()
-    res = test("test-index", size=10, start_date="2017/03/11 00:00",
-                       end_date="2017/03/12 11:00",
-                       doc_type="mb_report")
+    cs = ["20130723-B706-64C4-2B14-ABD4A6C1BB37", "20130723-6FBE-5455-9A4A-5EF686C0E774",
+          "20130723-8AC5-74F9-C954-FD0732D67DBE","20130723-13EE-E41F-0899-E5067B790C76"]
+    res = list(map(person_to_company,cs))
     print(res)
