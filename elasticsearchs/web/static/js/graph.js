@@ -535,49 +535,55 @@ function LoadPersonOnGpost(req) {
             $.post("/api/person/trend",req ,function (data) {
             var x = data["x_series"];
             var y = data["y_series"];
+            var y_0 = data["y_0"];
+            var y_1 = data["y_1"];
+            var y_2 = data["y_2"];
         //此处开始图表展示
         var myChart = echarts.init(document.getElementById('main'));
         option = {
-            color: ['#ff3d3d'],
+            color: ['#ff3d3d', '#00a0e9', '#f603ff', '#00b419'],
             tooltip: {
-                trigger: 'axis'
+                trigger: 'item',
+                position:["50%","50%"]
             },
             legend: {
                 x: 'left',
                 padding: [10, 20, 0, 20],
-                data: ['拜访次数'],
+                data: ['汇总', '网点', '经销商', '团购'],
                 selected: {
-                    'VATS': true
+                    '汇总': true,
+                    '网点': true,
+                    '经销商': true,
+                    '团购': true
                 }
             },
             grid: {
                 left: '0',
-                right: '5%',
-                bottom: '-4%',
+                right: '3%',
+                bottom: '3%',
                 top: '13%',
                 containLabel: true
             },
-
             xAxis: {
                 axisLabel :{
-                    interval:0, //显示所有的x轴的数据
-                    rotate: -45,
-                    margin: 5
+                            interval:0, //显示所有的x轴的数据
+                            rotate: -45,
+                            margin: 5
                 } ,
                 type: 'category',
                 boundaryGap: false,
                 splitLine: { //网格线
-                    show: true,
+                    show: false,
                     lineStyle: {
                         color: ['#b1b1b1'],
                         type: 'dashed'
                     }
                 },
-                data:  x
+                data: x
             },
             yAxis: {
                 splitLine: { //网格线
-                    show: true,
+                    show: false,
                     lineStyle: {
                         color: ['#b1b1b1'],
                         type: 'dashed'
@@ -585,17 +591,48 @@ function LoadPersonOnGpost(req) {
                 }
             },
             series: [{
-                name: 'VATS',
+                name: '汇总',
                 type: 'line',
-                data:  y,
+                data: y,
                 label: {
                     normal: {
                         show: true,
                         position: 'top' //值显示
                     }
                 }
+            }, {
+                name: '网点',
+                type: 'line',
+                data:  y_0,
+                label: {
+                    normal: {
+                        show: false,
+                        position: 'top'
+                    }
+                }
+            }, {
+                name: '经销商',
+                type: 'line',
+                data:  y_1,
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                }
+            }, {
+                name: '团购',
+                type: 'line',
+                data:  y_2,
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                }
             }]
         };
+        //作图结束
         myChart.setOption(option)
         });//请求结束
 }

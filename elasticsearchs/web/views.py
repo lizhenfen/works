@@ -203,7 +203,6 @@ class GroupByEmployeeHandler(tornado.web.RequestHandler):
         self.render("user.html", data=res)
         #self.finish(res)
 
-
 class TestHandler(tornado.web.RequestHandler):
 
     def get(self, *args, **kwargs):
@@ -217,7 +216,6 @@ class ApiCompanyTrendHandler(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         month = self.get_argument("month")
         company = self.get_argument("q",None)
-        print(company,month)
         if company:
             company_sql = '''
                       select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
@@ -292,6 +290,18 @@ class NginxConfigHandler(tornado.web.RequestHandler):
 
 #统计数据中的个人明细数据
 class LoadPersonOnGpost(tornado.web.RequestHandler):
+    #
+    def valueMap(self, res):
+        if res["by_user"]["buckets"] == []:
+            res["by_user"]["buckets"] = [{"by_user": {"buckets":[]}}]
+        res = res["by_user"]["buckets"][0]["by_user"]["buckets"]
+        all_keys = ["0", "1", "2"]
+        if len(res) < 3:
+            key = [k["key"] for k in res]
+            no_keys = list(set(all_keys) - set(key))
+            res.extend([{'doc_count': 0,  'key': str(_)} for _ in no_keys])
+            res.sort(key=lambda s: s["key"])
+        return res
 
     def post(self, *args, **kwargs):
         company_name = self.get_argument('company', None)
@@ -300,15 +310,31 @@ class LoadPersonOnGpost(tornado.web.RequestHandler):
         person    = self.get_argument("person_name")
         res = elasapi.search_key("test-index", start_date=start_date,
                                   end_date=end_date, key="PK_USER",
-                                 person_name=person)
+                                 person_name=person,multi_trend=True)
+
+        list(map(self.valueMap, res))
         data = {}
         x_series = []
         y_series =[]
+        y_0 = []
+        y_1 = []
+        y_2 = []
+
         for d in res:
+            print(d)
             x_series.append(d["key_as_string"])  #日期
             y_series.append(d["doc_count"])      #次数
+            for i in d["by_user"]["buckets"][0]["by_user"]["buckets"]:
+                if i["key"] == '0': y_1.append('%s' % i["doc_count"])
+                if i["key"] == '1': y_0.append(str(i["doc_count"]))
+                if i["key"] == '2': y_2.append(str(i["doc_count"]))
+
+
         data["x_series"] = list(map(lambda x: x.split()[0] , x_series))
         data["x_series"] = x_series
         data["y_series"] = y_series
+        data['y_0'] = y_0
+        data['y_1'] = y_1
+        data['y_2'] = y_2
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(data)

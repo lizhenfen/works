@@ -37,7 +37,7 @@ def query_word(word,index="test-index",key="UNITNAME",doc_type="company",size=10
     return data
 
 def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_type="custvisit",
-               person_name=None,company_name=None):
+               person_name=None,company_name=None,multi_trend=False):
     req = {
         "query": {
             "bool": {
@@ -56,6 +56,9 @@ def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_typ
     if person_name:
         must = {"match": {"PSNAME": person_name}}
         req["query"]["bool"]["must"] = must
+    if multi_trend:
+        mtrend = {"by_user": {"terms": {"field": "PK_CORP_ID"}}}
+        req["aggs"]["by_day"]["aggs"]["by_user"]["aggs"] = mtrend
     data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
     return data["aggregations"]["by_day"]["buckets"]
 
@@ -158,7 +161,6 @@ def test(index,size=10,start_date=None,end_date=None,doc_type="mb_report"):
     data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
     return data
 
-
 def person_to_company(word,index="test-index",key="CORP_ID",doc_type="company",size=1):
     req = {
         "size": size,
@@ -176,7 +178,7 @@ if __name__ == "__main__":
 
     import time
     start_time = time.time()
-    cs = ["20130723-B706-64C4-2B14-ABD4A6C1BB37", "20130723-6FBE-5455-9A4A-5EF686C0E774",
-          "20130723-8AC5-74F9-C954-FD0732D67DBE","20130723-13EE-E41F-0899-E5067B790C76"]
-    res = list(map(person_to_company,cs))
+    res = search_key("test-index", start_date="2017/02/02",
+                             end_date="2017/02/04", key="PK_USER",
+                             person_name="王恒", multi_trend=True)
     print(res)
