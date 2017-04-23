@@ -560,7 +560,7 @@ function LoadPersonOnGpost(req) {
             grid: {
                 left: '0',
                 right: '3%',
-                bottom: '3%',
+                bottom: '-4%',
                 top: '13%',
                 containLabel: true
             },
