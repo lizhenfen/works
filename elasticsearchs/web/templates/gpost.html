@@ -45,7 +45,11 @@
                     </fieldset>
                     <hr />
     </form>
-    <div id="Ptime"></div>
+    <div style="position:relative">
+        <div id="Ptime" style="float: left"></div>
+        <div id="Oracletime" style="float: right"></div>
+    </div>
+    <hr />
     <table id="cusTable"></table>
     <!-- 模态框（Modal）开始 -->
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -81,7 +85,6 @@
     $('input.typeahead').typeahead({
         source:  function (query, process) {
             q_type = 'LoadCompanyTrend';
-            console.log(q_type);
             return $.post('/search', { query: query, q_type: q_type }, function (data) {
                 console.log(data);
                 data = $.parseJSON(data);
@@ -93,8 +96,13 @@
     $(document).ready(function(){
         $("#btn").click(function(){
             var form = $("#companyForm").serialize();
+            $.post("/api/oraclde/sum",form,function(data){
+                console.log(data["time"]);
+                oracle_data = '<p>汇总时间:' + data["time"] + "秒</p>";
+                document.getElementById("Oracletime").innerHTML = oracle_data;
+            });
             $.post("/company/count",form,function (data) {
-                analyze_data = '汇总时间:' + data["time"] + "秒, 汇总数据:"+ data["count"] +"条<hr />";
+                analyze_data = '<p>汇总时间:' + data["time"] + "秒, 汇总数据:"+ data["count"] +"条</p>";
                 document.getElementById("Ptime").innerHTML=analyze_data;
                 $('#cusTable').bootstrapTable('destroy');
                 $(function () {
@@ -107,7 +115,6 @@
                         pagination: true,
                          //是否启用排序
                         sortable: true,
-
                         //初始化加载第一页，默认第一页
                         //我设置了这一项，但是貌似没起作用，而且我这默认是0,- -
                         pageNumber:1,

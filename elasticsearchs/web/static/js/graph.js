@@ -19,12 +19,13 @@ function LoadPersonColumnGraph(req) {
             },
             grid: {
                 left: '3%',
-                right: '4%',
+                right: '14%',
                 bottom: '15%',
                 containLabel: true
             },
             xAxis : [
                 {
+                    name: '开始工作',
                     axisLabel :{
                     interval:0, //显示所有的x轴的数据
                     //rotate: -45,  //逆时针旋转45
@@ -41,6 +42,7 @@ function LoadPersonColumnGraph(req) {
                 {
                     // type : 'category',
                     // data : ['10','20','30','40'],
+                    name: '人 数',
                     axisTick: {
                         alignWithLabel: true
                     }
@@ -48,7 +50,7 @@ function LoadPersonColumnGraph(req) {
             ],
             series : [
                 {
-                    name:'直接访问',
+                    name:'人数',
                     type:'bar',
                     barWidth: '40%',
                     data:y
@@ -119,12 +121,13 @@ function LoadCompanyColumnGraph(req) {
             },
             grid: {
                 left: '3%',
-                right: '4%',
+                right: '10%',
                 bottom: '3%',
                 containLabel: true
             },
             xAxis : [
                 {
+                    name: '拜访次数',
                     type : 'category',
                     data : x,
                     axisTick: {
@@ -134,6 +137,7 @@ function LoadCompanyColumnGraph(req) {
             ],
             yAxis : [
                 {
+                    name: '人 数',
                     axisTick: {
                         alignWithLabel: true
                     }
@@ -141,7 +145,7 @@ function LoadCompanyColumnGraph(req) {
             ],
             series : [
                 {
-                    name:'直接访问',
+                    name:'人数',
                     type:'bar',
                     barWidth: '40%',
                     data:y
@@ -367,6 +371,7 @@ function LoadCompanyTrend(req) {
                     margin: 5
                 } ,
                 type: 'category',
+                name: '日 期',
                 boundaryGap: false,
                 splitLine: { //网格线
                     show: true,
@@ -378,6 +383,7 @@ function LoadCompanyTrend(req) {
                 data:  x
             },
             yAxis: {
+                name: '拜访次数',
                 splitLine: { //网格线
                     show: true,
                     lineStyle: {
@@ -417,6 +423,7 @@ function LoadPersonTrend(req) {
             },
             legend: {
                 x: 'left',
+
                 padding: [10, 20, 0, 20],
                 data: ['拜访次数'],
                 selected: {
@@ -438,6 +445,7 @@ function LoadPersonTrend(req) {
                     margin: 5
                 } ,
                 type: 'category',
+                name:  '日 期',
                 boundaryGap: false,
                 splitLine: { //网格线
                     show: true,
@@ -449,6 +457,7 @@ function LoadPersonTrend(req) {
                 data:  x
             },
             yAxis: {
+                name: "拜访次数",
                 splitLine: { //网格线
                     show: true,
                     lineStyle: {
