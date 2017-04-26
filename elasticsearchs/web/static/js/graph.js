@@ -494,7 +494,6 @@ function show(){
 //index页, 查询按钮
 function LoadGranph() {
             var form = $("#analyze").serialize();
-            console.log(form);
             var objS = document.getElementById("mySelect");
             var load = objS.options[objS.selectedIndex].value;  //下拉菜单
             //var exec1 = load+"(\""+ query+ "\",\"" + month +"\")" ;

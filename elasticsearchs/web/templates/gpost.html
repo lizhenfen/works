@@ -63,11 +63,11 @@
                        <div class="form-group">
 						  <label class="col-sm-2 control-label" for="ds_start_date">开始日期</label>
                           <div class="col-sm-4">
-                             <input class="form-control" id="ds_start_date" name="start_date" type="text" placeholder="2017/02/01"/>
+                             <input class="form-control" id="ds_start_date" name="start_date" type="text" placeholder="yyyy/mm/dd"/>
                           </div>
                           <label class="col-sm-2 control-label" for="ds_end_date">结束日期</label>
                           <div class="col-sm-4">
-                             <input class="form-control" id="ds_end_date" name="end_date" type="text" placeholder="2017/02/03"/>
+                             <input class="form-control" id="ds_end_date" name="end_date" type="text" placeholder="yyyy/mm/dd"/>
                           </div>
 
 
@@ -179,10 +179,12 @@
     $(document).ready(function(){
         $("#btn").click(function(){
             var form = $("#companyForm").serialize();
-            t_time = TimeCount();
             $('.rtt').html('00');
             $('.lft').html('00');
             $('.lfm').html('00');
+            clearInterval(countTime);
+            t_time = TimeCount();
+            console.log(form);
             $.post("/api/oraclde/sum",form,function(data){
                 $('.rtt').html(data["time"].toFixed(2));
                 //document.getElementById("Oracletime").innerHTML = oracle_data;
@@ -191,8 +193,6 @@
             $.post("/company/count",form,function (data) {
                 $('.lft').html(data["time"]);
                 $('.lfm').html(data["count"]);
-                //analyze_data = '<p>汇总时间:' + data["time"] + "秒, 汇总数据:"+ data["count"] +"条</p>";
-                //document.getElementById("Ptime").innerHTML=analyze_data;
                 $('#cusTable').bootstrapTable('destroy');
                 $(function () {
 					$('#cusTable').bootstrapTable({
