@@ -47,7 +47,7 @@ def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_typ
         "aggs": {
             "by_day":{
                 "date_histogram":{"field": "VDATE","interval":"day"},
-                "aggs":{"by_user":{"terms":{"field":key}}}
+                "aggs":{"by_user":{"terms":{"field": key}}}
             }
         }
     }
@@ -107,7 +107,7 @@ def search_by_pdcust(index="test-index",doc_type='pdcust',key=None, custtype=Non
     return res
 
 #统计拜访数据
-def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PK_USER",company=None):
+def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PSNAME",company=None):
     '''
         根据客户类型: 0,1 区分
     '''
@@ -122,12 +122,14 @@ def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PK_USER",
 
         "aggs": {
             "groups": {
+                "terms": {"field": key, "size": 6 * 1024 * 1024,},
                 # 此值用来根据姓名或PK_USER 排序
-                "terms":{"field": "PSNAME" , "size": 6 * 1024 * 1024},
                 "aggs": {"by_user": {"terms": {"field": "PK_CORP_ID"},
                                      "aggs":{"unique": {"cardinality": {"field": "PK_CUST" }}},
                          },
-            },
+
+                        }
+
         }
     }}
     if company:
@@ -137,6 +139,7 @@ def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PK_USER",
     count = data["hits"]["total"]
     res = data["aggregations"]["groups"]
     res["count"] = count
+
     return res
 
 def test(index,size=10,start_date=None,end_date=None,doc_type="mb_report"):

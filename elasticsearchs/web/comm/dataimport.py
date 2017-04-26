@@ -169,8 +169,7 @@ if __name__ == "__main__":
     tuangou_baifang_sql = '''
                                  select b.pk_custvisit_h, b.pk_corp, b.pk_user, b.vdate, b.pk_cust
                                  from mb_psnalcustvisit_h b
-
-                                                    and b.vdate >= '2017-01-01'
+                                 WHERE  b.vdate >= '2017-01-01'
                                                     and b.vdate <= '2017-04-01'
                          '''
     insert_mb_custvisi_h(tuangou_baifang_sql, index="test-index", doc_type="custvisit")

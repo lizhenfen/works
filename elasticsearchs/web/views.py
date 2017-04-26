@@ -7,7 +7,8 @@ from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
 import tornado.web
 import tornado.gen
-
+import comm as redis
+print(redis.relationship)
 from comm import elasapi
 from comm  import auth
 from comm import comm
@@ -30,6 +31,7 @@ def outer(func):
         print(end_time - start_time)
         return res
     return inner
+
 
 
 class LoginHandler(tornado.web.RequestHandler):
@@ -69,6 +71,21 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
         self.render("gpost.html")
 
     def valueMap(self,res):
+        '''
+            res = {'key': '袁亮', 'by_user': {'doc_count_error_upper_bound': 0, 'sum_other_doc_count': 0, 'buckets': [{'key': '1', 'unique': {'value': 1}, 'doc_count': 2}]}, 'doc_count': 2}
+        '''
+        name = redis.relationship.get(res['key'])
+        if name:
+            res['key'] = name[0]
+            res['0']  = name[1]
+            res['1'] = name[2]
+            res['2'] = name[3]
+        else:
+            del res["key"]
+            del res['by_user']
+            del res['doc_count']
+            del res
+            return
         res = res["by_user"]["buckets"]
         all_keys = ["0", "1", "2"]
         if len(res) < 3:
@@ -76,7 +93,10 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
             no_keys = list( set(all_keys) - set(key) )
             res.extend([ {'doc_count': 0, 'unique': {'value': 0}, 'key': str(_) } for _ in no_keys ])
             res.sort(key=lambda s: s["key"])
+
         return res
+
+
 
     def post(self, *args, **kwargs):
         start_date = self.get_argument("start_date")
@@ -95,11 +115,14 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
         res = elasapi.search_by_cust_id("test-index",
                                         start_date=start_date,
                                         end_date=end_date,
+                                        key="PK_USER",
                                         size=10,company=company)
         endtime = time.time()
         res["time"] = "{:.2f}".format(endtime - starttime)
         #修改汇总数据中的 "-" 为 0
         list(map(self.valueMap, res["buckets"]))
+        # 去除不存在 关联关系的人 pk_user ~ pk_psn
+        res["buckets"] = [ r for r in  res["buckets"] if len(r)>0 ]
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(res)
 
@@ -295,7 +318,6 @@ class NginxConfigHandler(tornado.web.RequestHandler):
 
 #统计数据中的个人明细数据
 class LoadPersonOnGpost(tornado.web.RequestHandler):
-    #
     def valueMap(self, res):
         if res["by_user"]["buckets"] == []:
             res["by_user"]["buckets"] = [{"by_user": {"buckets":[]}}]
@@ -315,7 +337,7 @@ class LoadPersonOnGpost(tornado.web.RequestHandler):
         person    = self.get_argument("person_name")
         res = elasapi.search_key("test-index", start_date=start_date,
                                   end_date=end_date, key="PK_USER",
-                                 person_name=person,multi_trend=True)
+                                 person_name=person,multi_trend=True,doc_type='custvisit')
 
         list(map(self.valueMap, res))
         data = {}
@@ -326,14 +348,12 @@ class LoadPersonOnGpost(tornado.web.RequestHandler):
         y_2 = []
 
         for d in res:
-            print(d)
             x_series.append(d["key_as_string"])  #日期
             y_series.append(d["doc_count"])      #次数
             for i in d["by_user"]["buckets"][0]["by_user"]["buckets"]:
                 if i["key"] == '0': y_1.append('%s' % i["doc_count"])
                 if i["key"] == '1': y_0.append(str(i["doc_count"]))
                 if i["key"] == '2': y_2.append(str(i["doc_count"]))
-
 
         data["x_series"] = list(map(lambda x: x.split()[0] , x_series))
         data["x_series"] = x_series
