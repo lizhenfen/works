@@ -31,9 +31,9 @@
             source:  function (query, process) {
                 var objS = document.getElementById("mySelect");
                 var q_type = objS.options[objS.selectedIndex].value;  //下拉菜单
-                console.log(q_type);
+                //console.log(q_type);
             return $.post('/search', { query: query, q_type: q_type }, function (data) {
-                    console.log(data);
+                    //console.log(data);
                     data = $.parseJSON(data);
                     return process(data);
                 });

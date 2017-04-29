@@ -177,11 +177,23 @@ def person_to_company(word,index="test-index",key="CORP_ID",doc_type="company",s
     }
     data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
     return data["hits"]["hits"][0]["_source"]["UNITNAME"]
+def apitoallcount(index="test-index",doc_type="custvisit",size=1):
+    req = {
+        "size": size,
+        "query":{},
+        "_source": "false"
+    }
+    data = es.search(index=index, doc_type=doc_type, body=json.dumps(req))
+    return data
 if __name__ == "__main__":
 
     import time
     start_time = time.time()
-    res = search_key("test-index", start_date="2017/02/02",
-                             end_date="2017/02/04", key="PK_USER",
-                             person_name="王恒", multi_trend=True)
+    #res = person_to_company()
+    res = search_by_date(index="test-index",
+                         start_date='2017/04/01',
+                         doc_type="custvisit",
+                         end_date='2017/04/15',
+                         key="PK_CORP", )
+
     print(res)

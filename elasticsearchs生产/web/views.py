@@ -5,7 +5,6 @@ import bisect
 from tornado.escape import json_encode
 from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
-import tornado.web
 import tornado.gen
 #import comm as redis
 import json

@@ -25,15 +25,19 @@ def getMonthFirstDayAndLastDay(year=None, month=None):
     else:
         month = datetime.date.today().month
 
+    day  = datetime.date.today().day
     # 获取当月第一天的星期和当月的总天数
     firstDayWeekDay, monthRange = calendar.monthrange(year, month)
 
     # 获取当月的第一天
     firstDay = datetime.date(year=year, month=month, day=1)
+    today    = datetime.date(year=year, month=month, day=day)
     lastDay = datetime.date(year=year, month=month, day=monthRange)
+    if lastDay > today:
+        lastDay = today
     f = datetime.datetime.strftime(firstDay, "%Y/%m/%d")
     l = datetime.datetime.strftime(lastDay, "%Y/%m/%d")
-    return f, l
+    return (f,l)
 
 if __name__ == "__main__":
     t = getMonthFirstDayAndLastDay()

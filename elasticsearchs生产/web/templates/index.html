@@ -21,7 +21,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">藤兰数据处理中心</a>
+          <a class="navbar-brand" href="#">藤兰数据处理</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -64,14 +64,17 @@
           ">
               <h5 >
               <ol class="breadcrumb" >
-                <li><a href="#">首页</a></li>
+                <li><a href="/">首页</a></li>
                 <li><a href="#">分析</a></li>
               </ol>
           </h5>
           </div>
           <hr />
 
-          <div id="content"></div>
+          <div id="content">
+            <!-- <div id="main" style="width: 100%;height:400px;">xx</div> -->
+            <div id="all" style="width: 100%;height:900px;"></div>
+          </div>
 
 
         </div>
@@ -90,12 +93,15 @@
     <script src='{{ static_url("js/bootstrap3-typeahead.min.js") }}'></script>
     <!--自定义js -->
     <script src='{{ static_url("js/graph.js") }}'></script>
+
     <script type="text/javascript">
         //点击时, 蓝色显示
         $(document).ready(
-           ButtonClickBlue()
-
+            ButtonClickBlue(),
+            //class_by_tpye()
+            indexCountAll()
         );
     </script>
+
 
 </body></html>

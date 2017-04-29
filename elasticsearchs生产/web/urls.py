@@ -1,5 +1,5 @@
 import views
-
+from apis import index
 
 uri = [
             (r'/', views.IndexHandler),
@@ -17,4 +17,7 @@ uri = [
             (r'/nginx', views.NginxConfigHandler),
             (r'/api/person/trend', views.LoadPersonOnGpost),
             #(r'/api/oraclde/sum', views.OracleQueryHandler)
+            # index apis
+            (r'/apis/index/ccount', index.APIIndexClassCountByCustom),
+            (r'/apis/index/countall', index.APIIndexAllCount),
         ]

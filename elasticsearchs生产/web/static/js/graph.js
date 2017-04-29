@@ -644,3 +644,161 @@ function LoadPersonOnGpost(req) {
         myChart.setOption(option)
         });//请求结束
 }
+
+
+// 引入到首页
+
+function class_by_tpye() {
+    res = [];
+    $.post("/apis/index/ccount" ,function (data) {
+        var myChart = echarts.init(document.getElementById('main'));
+        option = {
+            title: {
+                text: '分类汇总',
+                subtext: '客户类型',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            series: [
+                {
+                    name: '客户类型',
+                    type: 'pie',
+                    radius: '30%',
+                    center: ['50%', '35%'],
+                    data: data,
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        myChart.setOption(option)
+    });  // post successfully
+}  //第一个函数完成
+
+
+//首页分类2
+function indexCountAll() {
+    $.post("/apis/index/countall", function (data) {
+        data = JSON.parse(data);
+        //console.log();
+        var myChart = echarts.init(document.getElementById('all'));
+
+var builderJson = {
+  "all": data.all,
+  "charts": data.company
+};
+
+var downloadJson = data.class_customer;
+
+var waterMarkText = 'ECHARTS';
+
+var canvas = document.createElement('canvas');
+var ctx = canvas.getContext('2d');
+canvas.width = canvas.height = 100;
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.globalAlpha = 0.08;
+ctx.font = '20px Microsoft Yahei';
+ctx.translate(50, 50);
+ctx.rotate(-Math.PI / 4);
+ctx.fillText(waterMarkText, 0, 0);
+
+option = {
+    backgroundColor: {
+        type: 'pattern',
+        image: canvas,
+        repeat: 'repeat'
+    },
+    tooltip: {},
+    title: [{
+        text: '各公司拜访记录汇总',
+        subtext: '总计 ' + builderJson.all,
+        x: '30%',
+        textAlign: 'center'
+    }, {
+        text: '客户拜访数据汇总',
+        subtext: '总计 ' + Object.keys(downloadJson).reduce(function (all, key) {
+            return all + downloadJson[key];
+        }, 0),
+        x: '75%',
+        textAlign: 'center'
+    }],
+    grid: [{
+        top: 50,
+        width: '50%',
+        bottom: '55%',
+        left: 10,
+        containLabel: true
+    }, {
+        top: '55%',
+        width: '50%',
+        bottom: 0,
+        left: 10,
+        containLabel: true
+    }],
+    xAxis: [{
+        type: 'value',
+        max: builderJson.all / 2,
+        splitLine: {
+            show: false
+        }
+    }],
+    yAxis: [{
+        type: 'category',
+        data: Object.keys(builderJson.charts),
+        axisLabel: {
+            interval: 0,
+            rotate: 30
+        },
+        splitLine: {
+            show: true
+        }
+    }],
+    series: [{
+        type: 'bar',
+        stack: 'chart',
+        z: 3,
+        label: {
+            normal: {
+                position: 'right',
+                show: true
+            }
+        },
+        data: Object.keys(builderJson.charts).map(function (key) {
+            return builderJson.charts[key];
+        })
+    }, {
+        type: 'bar',
+        stack: 'chart',
+        silent: true,
+        itemStyle: {
+            normal: {
+                color: '#eee'
+            }
+        },
+        data: Object.keys(builderJson.charts).map(function (key) {
+            return builderJson.all - builderJson.charts[key];
+        })
+    }, {
+        type: 'pie',
+        radius: [0, '30%'],
+        center: ['75%', '25%'],
+        data: Object.keys(downloadJson).map(function (key) {
+            return {
+                name: key,
+                value: downloadJson[key]
+            }
+        })
+    }]
+};
+    myChart.setOption(option)
+    }); //请求
+}
