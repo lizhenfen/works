@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <title>首页</title>
+        <link href='{{ static_url("css/bootstrap.min.css") }}' rel="stylesheet">
+        <link href='{{ static_url("css/index.css") }}' rel="stylesheet">
+        <!-- 引入其他所有网页的内容 -->
+        <link href='{{ static_url("css/bootstrap-table.min.css") }}' rel="stylesheet">
+        <link href='{{ static_url("css/font-awesome.min.css") }}' rel="stylesheet">
+      <link href='{{ static_url("css/jquery-ui.min.css") }}' rel="stylesheet">
+    </head>
+
+  <body >
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">藤兰数据处理中心</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">设置</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ user }} <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">信息</a></li>
+                  <li><a href="/logout">退出</a></li>
+                </ul>
+              </li>
+            <li><a href="#">帮助</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="查询...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div id="left" class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#" onclick="showAtRight('/company/count')">数据汇总</a></li>
+			<li><a href="#" onclick="showAtRight('/echart/company')">每日工作</a></li>
+			<li><a href="#" onclick="showAtRight('/echarts/api/company')">月拜分析</a></li>
+          </ul>
+          <!--<ul class="nav nav-sidebar">
+            <li><a href="">Nav item</a></li> -->
+
+        </div>
+
+        <div style="padding-top: 0px" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <div style="height: 20px ;weight:60px;
+            display: inline-block;
+            margin-top: 2px;
+            padding: 0 0;
+            margin-bottom: 20px;
+          ">
+              <h5 >
+              <ol class="breadcrumb" >
+                <li><a href="#">首页</a></li>
+                <li><a href="#">分析</a></li>
+              </ol>
+          </h5>
+          </div>
+          <hr />
+
+          <div id="content"></div>
+
+
+        </div>
+      </div>
+    </div>
+
+     <!-- company.html -->
+    <script src='{{ static_url("js/echarts.min.js") }}' ></script>
+    <script src='{{ static_url("js/jquery.min.js") }}'></script>
+    <script src='{{ static_url("js/bootstrap-table.min.js") }}'></script>
+    <script src='{{ static_url("js/bootstrap-table-zh-CN.js") }}'></script>
+    <script src='{{ static_url("js/bootstrap.min.js") }}'></script>
+    <script src='{{ static_url("js/jquery-ui.min.js") }}' ></script>
+    <!-- company.html -->
+    <!--bootstrap的自动补全 -->
+    <script src='{{ static_url("js/bootstrap3-typeahead.min.js") }}'></script>
+    <!--自定义js -->
+    <script src='{{ static_url("js/graph.js") }}'></script>
+    <script type="text/javascript">
+        //点击时, 蓝色显示
+        $(document).ready(
+           ButtonClickBlue()
+
+        );
+    </script>
+
+</body></html>

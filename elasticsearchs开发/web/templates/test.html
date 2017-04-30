@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>分组数据</title>
+</head>
+<body>
+    {% for d in data %}
+        <p> 日期: {{ d['key_as_string'] }} </p>
+        {% for u in d['by_user']['buckets'] %}
+            <p> {{ u['key'] }}, {{ u['doc_count'] }} </p>
+        {% end %}
+    {% end %}
+</body>
+</html>
