@@ -4,7 +4,6 @@ import tornado.httpserver
 from urls import uri
 from conf import settings
 
-
 class App(tornado.web.Application):
     def __init__(self):
         super(App,self).__init__(uri,**settings.settings)

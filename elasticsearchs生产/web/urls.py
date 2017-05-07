@@ -16,7 +16,7 @@ uri = [
             (r'/search', views.ApiAutoCompleteHandler),
             (r'/nginx', views.NginxConfigHandler),
             (r'/api/person/trend', views.LoadPersonOnGpost),
-            #(r'/api/oraclde/sum', views.OracleQueryHandler)
+            (r'/api/oraclde/sum', views.OracleQueryHandler),
             # index apis
             (r'/apis/index/ccount', index.APIIndexClassCountByCustom),
             (r'/apis/index/countall', index.APIIndexAllCount),

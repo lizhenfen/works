@@ -97,14 +97,14 @@ class Row(dict):
 
 
 class RedisConn(object):
-    def __init__(self):
+    def __init__(self,db=1):
         try:
-            self.reconnect()
+            self.reconnect(db)
         except Exception as e:
             raise Exception("redis 连接失败", str(e))
 
-    def reconnect(self):
-        self.rs = redis.Redis(host='192.168.15.212',port=6379, db=1)
+    def reconnect(self,db):
+        self.rs = redis.Redis(host='192.168.15.212',port=6379, db=db)
 
     def __del__(self):
         if getattr(self,'rs',None) is not None:
@@ -133,14 +133,28 @@ if __name__ == "__main__":
             from bd_psnalcust b
             group by b.pk_corp, b.pk_psn) cust2 on a.pk_corp = cust2.pk_corp and a.pk_psn = cust2.pk_psn
              '''
-    t = Connection()
+    '''t = Connection()
     ss = t.executemany(sql)
     relationship = {}
     rds  = RedisConn()
-    '''for i in ss:
+    for i in ss:
         # if i[-1] == 0 and i[-2] == 0 and i[-3] == 0:
         #    continue
         rds.set(i[0],json.dumps([i[1], i[2], i[3], i[4]]))
         print(i)
-    '''
+
     print(rds.get('E634BB00-700D-11E6-BB0F-F62BD1B9EB67').decode())
+    '''
+    # 导入 公司名称 和 公司编号
+    c_sql = '''
+               select a.corp_id,a.unitname from pub_corp a
+                 '''
+    t = Connection()
+    ss = t.executemany(c_sql)
+    relationship = {}
+    rds = RedisConn()
+    for i in ss:
+        # if i[-1] == 0 and i[-2] == 0 and i[-3] == 0:
+        #    continue
+        rds.set(i[1], json.dumps(i[0]))
+        print(i[0],i[1])

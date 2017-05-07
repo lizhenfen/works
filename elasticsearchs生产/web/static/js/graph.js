@@ -698,8 +698,6 @@ var builderJson = {
 
 var downloadJson = data.class_customer;
 
-var waterMarkText = 'ECHARTS';
-
 var canvas = document.createElement('canvas');
 var ctx = canvas.getContext('2d');
 canvas.width = canvas.height = 100;
@@ -709,7 +707,7 @@ ctx.globalAlpha = 0.08;
 ctx.font = '20px Microsoft Yahei';
 ctx.translate(50, 50);
 ctx.rotate(-Math.PI / 4);
-ctx.fillText(waterMarkText, 0, 0);
+
 
 option = {
     backgroundColor: {

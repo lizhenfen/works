@@ -10,8 +10,8 @@
     <style>
         .rt{
             position:absolute;
-            margin-left: 650px;
-             width: 150px;
+            margin-left: 750px;
+            width: 200px;
             height: 40px;
             line-height: 40px;
             text-align: center;
@@ -20,17 +20,17 @@
         }
         .lf{
             position:absolute;
-            width: 210px;
+            width: 250px;
             height: 40px;
             padding: 0px;
             line-height: 25px;
             text-align: center;
-            font-size: 10px;
+            font-size: 20px;
             font-family: "微软雅黑";
         }
         .warp{
             position:absolute;
-            margin-left: 200px;
+            margin-left: 330px;
             width: 350px;
             height: 40px;
             line-height: 40px;
@@ -45,6 +45,11 @@
             color: #C9302C;
 
         }
+        .btncc {
+            disabled: "disabled";
+                color: #C9302C;
+        }
+
     </style>
 </head>
 <body>
@@ -57,25 +62,26 @@
                           <div class="col-sm-4">
                               <input type="text" id="q" style="margin:0px auto;width:300px; display: inline-block"
                                class="typeahead form-control" data-provide="typeahead" name="q"
-                               autocomplete="off" placeholder="今缘春销售">
+                               autocomplete="off" placeholder="公司名(可选)">
                           </div>
                        </div>
                        <div class="form-group">
 						  <label class="col-sm-2 control-label" for="ds_start_date">开始日期</label>
                           <div class="col-sm-4">
-                             <input class="form-control" id="ds_start_date" name="start_date" type="text" placeholder="yyyy/mm/dd"/>
+                             <input class="form-control" id="ds_start_date" name="start_date" type="text" placeholder="yyyy/mm/dd  (必填)"/>
                           </div>
                           <label class="col-sm-2 control-label" for="ds_end_date">结束日期</label>
                           <div class="col-sm-4">
-                             <input class="form-control" id="ds_end_date" name="end_date" type="text" placeholder="yyyy/mm/dd"/>
+                             <input class="form-control" id="ds_end_date" name="end_date" type="text" placeholder="yyyy/mm/dd  (必填)"/>
                           </div>
 
 
                        </div>
 
-                        <div class="form-group">
-                          <div class="col-sm-4 pull-right">
+                        <div class="form-group" >
+                          <div class="col-sm-4 pull-right" >
                              <input  style="width: 50%" class="btn btn-primary btn-block" id="btn" type="button" value="查询"/>
+                             <input  style="width: 50%; display: none" class="btn btn-primary btn-block" id="btn1" type="button" value="终止oracle查询"/>
                           </div>
 
                        </div>
@@ -86,16 +92,16 @@
     <div style="width: 100%; position:relative; height: 45px;">
         <div class="lf" id="Ptime" >
             汇总时间: <strong class="lft">00</strong>秒<br>
-            汇总数量:  <strong class="lfm">00</strong>条
+            汇总数量: <strong class="lfm">00</strong>条
         </div>
         <div class="warp">
             <strong class="a">00</strong>秒 <strong class="b">00</strong>毫秒
         </div>
-        <!--
+
         <div class="rt" id="Oracletime" >
             汇总时间: <strong class="rtt">00</strong>秒
         </div>
-        -->
+
     </div>
     <hr />
     <table id="cusTable"></table>
@@ -159,6 +165,7 @@
 			// 获取分钟、毫秒数
 			$(".a").html(ms);
 			$(".b").html(hm);
+			window.search_time = times;
 		}, 10);
 	}
 
@@ -178,18 +185,38 @@
     });
 
     $(document).ready(function(){
+        $("#btn1").click(function(){
+           oracle.abort();
+           elas.abort();
+           clearInterval(countTime);
+            $("#btn").removeAttr("disabled");//将按钮可用
+            $("#btn1").css("display",'none');
+        });
         $("#btn").click(function(){
+            $("#btn").attr({"disabled":"disabled"});
+            $("#btn1").css("display",'block');
+            if (typeof(search_time) != 'undefined' && search_time != 0){
+                clearInterval(countTime);
+            }
             var form = $("#companyForm").serialize();
-            //$('.rtt').html('00');
+            $('.rtt').html('00');
             $('.lft').html('00');
             $('.lfm').html('00');
-
+            $('.a').html('00');
+            $('.b').html('00');
             t_time = TimeCount();
-            $.post("/company/count",form,function (data) {
+            window.oracle = $.post("/api/oraclde/sum",form,function(data) {
+                 $('.rtt').html(data["time"].toFixed(2));
+                 //document.getElementById("Oracletime").innerHTML = oracle_data;
+                 clearInterval(countTime);
+
+            });
+            window.elas = $.post("/company/count",form,function (data) {
                 $('.lft').html(data["time"]);
                 $('.lfm').html(data["count"]);
                 $('#cusTable').bootstrapTable('destroy');
-                clearInterval(countTime);
+                $("#btn").removeAttr("disabled");//将按钮可用
+
                 $(function () {
 					$('#cusTable').bootstrapTable({
 					    //是否显示行间隔色
@@ -220,34 +247,34 @@
                                     title: '姓名'
                                 }, {
                                     field: 'doc_count',
-                                    title: '拜访总数'
+                                    title: '客户拜访总次数'
                                 },{
                                     field: '1',
-                                    title: '网点(1)数'
+                                    title: '网点个数'
                                 },{
                                     field: 'by_user.buckets.1.doc_count',
-                                    title: '网点(1)总数'
+                                    title: '网点拜访次数'
                                 },{
                                     field: 'by_user.buckets.1.unique.value',
-                                    title: '网点(1)个数'
+                                    title: '网点拜访个数'
                                 },{
                                     field: '0',
-                                    title: '经销商(0)数'
+                                    title: '经销商个数'
                                 },{
                                     field: 'by_user.buckets.0.doc_count',
-                                    title: '经销商(0)总数'
+                                    title: '经销商拜访次数'
                                 },{
                                     field: 'by_user.buckets.0.unique.value',
-                                    title: '经销商(0)个数'
+                                    title: '经销商拜访个数'
                                 },{
                                     field: '2',
-                                    title: '团购(2)数'
+                                    title: '团购个数'
                                 },{
                                     field: 'by_user.buckets.2.doc_count',
-                                    title: '团购(2)总数'
+                                    title: '团购拜访次数'
                                 },{
                                     field: 'by_user.buckets.2.unique.value',
-                                    title: '团购(2)个数'
+                                    title: '团购拜访个数'
                                 },{
                                     field: 'operate',
                                     title: '操作',

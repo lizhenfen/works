@@ -5,7 +5,7 @@ settings = {
             "template_path": os.path.join( os.path.dirname(BASEPATH), "templates"),
             "static_path": os.path.join( os.path.dirname(BASEPATH), "static"),
             "cookie_secret": "bZJc2sWbQLKos6GkHn/VB9oXwQt8S0R0kRvJ5/xJ89E=",
-            "debug": True,
+            #"debug": True,
             "login_url": '/login'
         }
 

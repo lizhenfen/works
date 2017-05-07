@@ -1,6 +1,6 @@
 import tornado.web
 from comm import elasapi
-from comm import comm
+from comm import common
 from tornado.escape import json_encode
 from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
@@ -18,7 +18,7 @@ class APIIndexClassCountByCustom(tornado.web.RequestHandler):
         return k
 
     def post(self, *args, **kwargs):
-        first_day, end_day = comm.getMonthFirstDayAndLastDay()
+        first_day, end_day = common.getMonthFirstDayAndLastDay()
         res = elasapi.search_by_date(index="test-index",
                              start_date= first_day,
                              doc_type="custvisit",
@@ -54,7 +54,9 @@ class APIIndexAllCount(tornado.web.RequestHandler):
 
     def post(self, *args, **kwargs):
         res_dict = {}
-        first_day, end_day = comm.getMonthFirstDayAndLastDay()
+        #first_day, end_day = common.getMonthFirstDayAndLastDay()
+        first_day = '2017/04/01'
+        end_day   = '2017/04/30'
         company = elasapi.search_by_date(index="test-index",
                          start_date=first_day,
                          doc_type="custvisit",

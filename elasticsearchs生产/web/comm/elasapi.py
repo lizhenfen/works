@@ -38,6 +38,7 @@ def query_word(word,index="test-index",key="UNITNAME",doc_type="company",size=10
 
 def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_type="custvisit",
                person_name=None,company_name=None,multi_trend=False):
+
     req = {
         "query": {
             "bool": {
@@ -52,6 +53,7 @@ def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_typ
         }
     }
     if company_name:
+        company_name = company_name.strip('"')
         req["query"]["bool"]["must"] =  {"term": {"PK_CORP": company_name }},
     if person_name:
         must = {"match": {"PSNAME": person_name}}
@@ -64,6 +66,7 @@ def search_key(index,size=10,start_date=None,end_date=None,key="PK_USER",doc_typ
 
 def search_by_date(index="test-index",start_date=None, doc_type="custvisit",end_date=None,
                    key="PSNAME",company_name=None,person_name=None):
+
     # 存在一个小BUG, 当用户重名时，需要根据PK_USER分组
     req = {
         "size": 10,
@@ -79,6 +82,7 @@ def search_by_date(index="test-index",start_date=None, doc_type="custvisit",end_
         }
     }
     if company_name:
+        company_name = company_name.strip('"')
         req["query"]["bool"]["must"] =  {"term": {"PK_CORP": company_name }}
     if person_name:
         must = {"match": {"PSNAME": person_name}}
@@ -111,6 +115,7 @@ def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PSNAME",c
     '''
         根据客户类型: 0,1 区分
     '''
+
     req = {
         "size": 1,
         "_source": "false",
@@ -133,13 +138,13 @@ def search_by_cust_id(index,start_date=None,end_date=None,size=10,key="PSNAME",c
         }
     }}
     if company:
-        req["query"]["bool"]["must"] =  {"term": {"PK_CORP": company }},
+        company = company.strip('"')
+        req["query"]["bool"]["must"] =  {"term": {"PK_CORP": company }}
 
     data = es.search(index=index,body=req,doc_type="custvisit")
     count = data["hits"]["total"]
     res = data["aggregations"]["groups"]
     res["count"] = count
-
     return res
 
 def test(index,size=10,start_date=None,end_date=None,doc_type="mb_report"):
@@ -189,11 +194,11 @@ if __name__ == "__main__":
 
     import time
     start_time = time.time()
-    #res = person_to_company()
-    res = search_by_date(index="test-index",
-                         start_date='2017/04/01',
-                         doc_type="custvisit",
-                         end_date='2017/04/15',
-                         key="PK_CORP", )
+    com_name = "172A13A0-F08E-11DF-B72E-CD511538A0D2"
+    res = search_by_cust_id("test-index",
+                      start_date="2017/02/01",
+                      end_date="2017/02/21",
+                      key="PK_USER",
+                      size=10, company=com_name)
 
     print(res)

@@ -11,7 +11,7 @@ import json
 
 from comm import elasapi
 from comm  import auth
-from comm import comm
+from comm import common
 #导入数据库
 from comm import database
 
@@ -68,7 +68,8 @@ class IndexHandler(MainHandler):
 #汇总公司的人员的拜访次数统计
 class GroupByCompanyHandler(tornado.web.RequestHandler):
     def initialize(self):
-        self.rds = database.RedisConn()
+        self.db = database.RedisConn()
+
     def get(self, *args, **kwargs):
         self.render("gpost.html")
 
@@ -77,7 +78,7 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
             res = {'key': '袁亮', 'by_user': {'doc_count_error_upper_bound': 0, 'sum_other_doc_count': 0, 'buckets': [{'key': '1', 'unique': {'value': 1}, 'doc_count': 2}]}, 'doc_count': 2}
         '''
         #name = redis.relationship.get(res['key'])
-        name = self.rds.get(res['key'])
+        name = self.db.get(res['key'])
         if name:
             name = json.loads(name.decode())
             res['key'] = name[0]
@@ -95,32 +96,30 @@ class GroupByCompanyHandler(tornado.web.RequestHandler):
 
         return res
 
-
-
     def post(self, *args, **kwargs):
         start_date = self.get_argument("start_date")
         end_date = self.get_argument("end_date")
-        company  = self.get_argument("q", None)
+        com_name  = self.get_argument("q", None)
+
         if not end_date and not start_date:
-            #未指定日期
             pass
-        if company:
-            company_sql = '''
-                           select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
-                         '''
-            db = database.Connection()
-            company =  db.get(company_sql,company)["CORP_ID"]
+
+        if com_name:
+            com_name = self.db.get(com_name)
+            com_name = str(com_name.decode())
+
         starttime = time.time()
         res = elasapi.search_by_cust_id("test-index",
                                         start_date=start_date,
                                         end_date=end_date,
                                         key="PK_USER",
-                                        size=10,company=company)
+                                        size=10,company=com_name)
         endtime = time.time()
         res["time"] = "{:.2f}".format(endtime - starttime)
         #修改汇总数据中的 "-" 为 0
         list(map(self.valueMap, res["buckets"]))
         #print(res["buckets"])
+        #print(res)
         self.set_header("Content-Type","application/json;charset=UTF-8")
         self.finish(res)
 
@@ -130,6 +129,9 @@ class EchartsHandler(tornado.web.RequestHandler):
 
 #公司日拜访次数
 class AnalyzeByCompanyVisitHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        self.db = database.RedisConn()
+
     def listtogroup(self,lreq):
         res = []
         for i in enumerate(lreq):
@@ -142,11 +144,8 @@ class AnalyzeByCompanyVisitHandler(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         company = self.get_argument("q", None)
         if company:
-            company_sql = '''
-                  select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
-                                 '''
-            db = database.Connection()
-            company = db.get(company_sql, company)["CORP_ID"]
+            company = self.db.get(company)
+            company = str(company.decode())
         starttime = time.time()
         res = elasapi.search_by_date("test-index",
                                    start_date="2017/02/12",
@@ -212,7 +211,7 @@ class AnalyzeByPersonVisitHandler(tornado.web.RequestHandler):
         res = list(map(self.convert_corp_name, buckets))
         d["buckets"] = buckets
         end_time = time.time()
-        print(end_time - start_time )
+        #(end_time - start_time )
         self.set_header("Access-Control-Allow-Origin", "*")
         self.finish(json_encode(d))
 
@@ -236,6 +235,9 @@ class TestHandler(tornado.web.RequestHandler):
 
 #公司当月每天的拜访次数的趋势图
 class ApiCompanyTrendHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        self.db = database.RedisConn()
+
     def get(self, *args, **kwargs):
         self.render("companytrend.html")
 
@@ -243,16 +245,14 @@ class ApiCompanyTrendHandler(tornado.web.RequestHandler):
         month = self.get_argument("month")
         company = self.get_argument("q",None)
         if company:
-            company_sql = '''
-                      select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
-                                 '''
-            db = database.Connection()
-            company = db.get(company_sql, company)["CORP_ID"]
+            company = self.db.get(company)
+            company = company.decode()
 
-        start_date, end_date = comm.getMonthFirstDayAndLastDay(month=month)
+        start_date, end_date = common.getMonthFirstDayAndLastDay(month=month)
         res = elasapi.search_key("test-index",start_date=start_date,
                                    end_date=end_date,key="PK_CORP",
                                  company_name=company)
+
         data = {}
         x_series = []
         y_series =[]
@@ -270,7 +270,7 @@ class ApiPersonTrendHandler(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         month  = self.get_argument("month")
         person = self.get_argument("q")
-        start_date,end_date = comm.getMonthFirstDayAndLastDay(month=month)
+        start_date,end_date = common.getMonthFirstDayAndLastDay(month=month)
         res = elasapi.search_key("test-index", start_date=start_date,
                                  end_date=end_date, key="PK_USER",
                                  person_name=person)
@@ -380,7 +380,7 @@ class OracleQueryHandler(tornado.web.RequestHandler):
     @run_on_executor
     def query_all(self,*args):
         sql = '''
-                   select son.pk_corp,
+                select son.pk_corp,
                dept.deptname,
                son.psnname,
                cl.psnclname,

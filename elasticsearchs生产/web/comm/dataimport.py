@@ -196,3 +196,10 @@ if __name__ == "__main__":
             from bd_person a
         '''
     insert_data(company_name_sql, index="test-index", doc_type="person")
+
+    # 导入公司信息
+    search_sql = '''
+                            select a.corp_id,a.unitname from pub_corp a where a.unitname in :1
+                             '''
+    db = database.Connection()
+    company = db.get(search_sql, company)["CORP_ID"]
