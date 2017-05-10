@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/djangos/.idea/djangos.iml" filepath="$PROJECT_DIR$/djangos/.idea/djangos.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WebConfig/.idea/WebConfig.iml" filepath="$PROJECT_DIR$/WebConfig/.idea/WebConfig.iml" />
       <module fileurl="file://$PROJECT_DIR$/web/.idea/web.iml" filepath="$PROJECT_DIR$/web/.idea/web.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/work.iml" filepath="$PROJECT_DIR$/.idea/work.iml" />
     </modules>
