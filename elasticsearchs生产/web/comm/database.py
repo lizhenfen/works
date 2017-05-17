@@ -27,7 +27,7 @@ class Connection(object):
 
     def reconnect(self):
         self.close()
-        self._db = cx_Oracle.connect('jlfmmp','jlfmmptest','192.168.15.66/hzdb66')
+        self._db = cx_Oracle.connect('xx','jxx','xx6')
 
     def _ensure_connected(self):
         if (self._db is None or
